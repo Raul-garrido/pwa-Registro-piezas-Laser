@@ -25,3 +25,11 @@ Servida por https se abre en cualquier móvil, se instala como app y funciona si
 - `manifest.webmanifest` — nombre, colores e iconos para instalarla.
 - `sw.js` — service worker (funcionamiento sin conexión). Al cambiar la app, sube `CACHE` (`registro-piezas-v2`, ...).
 - `icons/` — iconos de la app.
+
+## Actualizaciones sin perder datos
+Los registros se guardan en IndexedDB (`piezasDB` / `registros`) en cada móvil y no se
+tocan al publicar una versión nueva. Reglas para cada cambio:
+- No cambiar nunca `DB_NAME` ni `STORE`, ni borrar el almacén.
+- Campos nuevos: el código debe funcionar si faltan en registros antiguos (ver `fotosDe`).
+- Si hiciera falta cambiar la estructura: subir `DB_VERSION` y migrar en `onupgradeneeded` sin borrar.
+- Subir la versión de `CACHE` en `sw.js` en cada publicación.

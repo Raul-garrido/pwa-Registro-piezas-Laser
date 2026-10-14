@@ -186,13 +186,25 @@ main {
 }
 .tarjeta:active { transform: scale(0.98); }
 
+.tarjeta .miniatura-caja { position: relative; flex: none; }
 .tarjeta .miniatura {
   width: 64px;
   height: 64px;
   border-radius: 10px;
   object-fit: cover;
   background: var(--gris-fondo);
-  flex: none;
+  display: block;
+}
+.tarjeta .num-fotos {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 999px;
 }
 
 .tarjeta .info { flex: 1; min-width: 0; }
@@ -318,36 +330,78 @@ main {
   gap: 12px;
 }
 
-.imagen-picker {
-  border: 2px dashed var(--gris-borde);
-  border-radius: var(--radio);
+/* Rejilla de hasta 3 fotos en el formulario */
+.campo label .contador-fotos { float: right; font-weight: 500; }
+.rejilla-fotos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.foto-slot {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
   background: #fff;
+  box-shadow: var(--sombra);
+}
+.foto-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foto-slot .quitar-foto {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(15, 23, 42, 0.7);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+.foto-slot .etiqueta-principal {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  background: var(--azul);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+.foto-anadir {
+  border: 2px dashed var(--gris-borde);
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+}
+.foto-anadir button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--azul);
+  font-size: 13px;
+  font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 10px;
-  text-align: center;
+  gap: 2px;
+  cursor: pointer;
+}
+.foto-anadir button + button { border-top: 1px solid var(--gris-borde); }
+.foto-anadir button .icono { font-size: 20px; }
+.foto-procesando {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
   color: var(--texto-suave);
-  position: relative;
-  overflow: hidden;
-  min-height: 160px;
-  cursor: pointer;
+  text-align: center;
+  padding: 6px;
 }
-.imagen-picker img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.imagen-picker .icono { font-size: 34px; margin-bottom: 6px; }
-.imagen-picker input[type=file] {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
+.ayuda-fotos { font-size: 12px; color: var(--texto-suave); margin-top: 6px; }
 
 .botones-form {
   display: flex;
@@ -382,10 +436,25 @@ main {
   border-radius: var(--radio);
   background: #0f172a;
   display: block;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   max-height: 60vh;
   object-fit: contain;
 }
+.detalle-miniaturas {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.detalle-miniaturas img {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 3px solid transparent;
+  opacity: 0.7;
+}
+.detalle-miniaturas img.activa { border-color: var(--azul); opacity: 1; }
 .ficha {
   background: #fff;
   border-radius: var(--radio);
@@ -448,11 +517,6 @@ mark {
   transform: translateX(-50%) translateY(0);
 }
 
-.imagen-picker.con-imagen .icono,
-.imagen-picker.con-imagen > div:not(.icono) {
-  opacity: 0;
-}
-
 /* --- Visor de imagen a pantalla completa (detalle) --- */
 .detalle-imagen { cursor: zoom-in; }
 
@@ -486,18 +550,31 @@ mark {
   z-index: 101;
 }
 .lightbox-cerrar:active { background: rgba(255, 255, 255, 0.3); }
-
-.enlace-galeria {
-  display: block;
-  width: 100%;
-  margin-top: 6px;
-  min-height: 44px;
+.lightbox-flecha {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 64px;
   border: none;
-  background: transparent;
-  color: var(--azul);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 30px;
+  z-index: 101;
+}
+.lightbox-flecha.anterior { left: max(8px, env(safe-area-inset-left, 8px)); }
+.lightbox-flecha.siguiente { right: max(8px, env(safe-area-inset-right, 8px)); }
+.lightbox-contador {
+  position: absolute;
+  bottom: max(18px, env(safe-area-inset-bottom, 18px));
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
   font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 4px 12px;
+  border-radius: 999px;
 }
 
 .aviso-error {
@@ -521,7 +598,10 @@ mark {
 
 <div id="lightbox" class="lightbox">
   <button id="btnCerrarLightbox" class="lightbox-cerrar" aria-label="Cerrar">✕</button>
+  <button id="btnLightboxAnterior" class="lightbox-flecha anterior" aria-label="Foto anterior">‹</button>
   <img id="lightboxImg" alt="">
+  <button id="btnLightboxSiguiente" class="lightbox-flecha siguiente" aria-label="Foto siguiente">›</button>
+  <div id="lightboxContador" class="lightbox-contador"></div>
 </div>
 
 <script>
@@ -619,6 +699,11 @@ window.addEventListener('error', (ev) => mostrarToast('Error: ' + textoError(ev.
 window.addEventListener('unhandledrejection', (ev) => mostrarToast('Error: ' + textoError(ev.reason)));
 
 // ---------- Datos (IndexedDB) ----------
+// IMPORTANTE: los registros viven en el movil de cada usuario. Para no perderlos
+// al actualizar la app NUNCA cambies DB_NAME ni STORE, ni borres el almacen.
+// Si algun dia hace falta cambiar la estructura, sube DB_VERSION y migra los
+// datos en onupgradeneeded sin borrar nada. Los campos nuevos de un registro
+// no necesitan migracion: basta con tratar su ausencia en el codigo (ver fotosDe).
 const DB_NAME = 'piezasDB';
 const DB_VERSION = 1;
 const STORE = 'registros';
@@ -664,6 +749,17 @@ function promesa(req) {
     req.onerror = () => reject(req.error);
   });
 }
+// Fotos de un registro (maximo MAX_FOTOS). La principal sigue en los campos de
+// siempre (imagenThumb / imagenFull) y las demas en fotosExtra: [{ thumb, full }].
+// Asi los registros creados antes de admitir varias fotos se leen sin migrar nada.
+const MAX_FOTOS = 3;
+function fotosDe(r) {
+  const fotos = [];
+  if (r && r.imagenFull) fotos.push({ thumb: r.imagenThumb || r.imagenFull, full: r.imagenFull });
+  if (r && Array.isArray(r.fotosExtra)) r.fotosExtra.forEach((f) => { if (f && f.full) fotos.push(f); });
+  return fotos.slice(0, MAX_FOTOS);
+}
+
 const PiezasDB = {
   async guardar(registro) { return conTransaccion('readwrite', (store) => promesa(store.put(registro))); },
   async obtener(id) { return conTransaccion('readonly', (store) => promesa(store.get(id))); },
@@ -677,8 +773,28 @@ const elMain = document.getElementById('appMain');
 const elLightbox = document.getElementById('lightbox');
 const elLightboxImg = document.getElementById('lightboxImg');
 
-function abrirLightbox(src, alt) {
-  elLightboxImg.src = src;
+const elLightboxAnterior = document.getElementById('btnLightboxAnterior');
+const elLightboxSiguiente = document.getElementById('btnLightboxSiguiente');
+const elLightboxContador = document.getElementById('lightboxContador');
+const visor = { fotos: [], indice: 0 };
+function pintarLightbox() {
+  elLightboxImg.src = visor.fotos[visor.indice];
+  const varias = visor.fotos.length > 1;
+  elLightboxAnterior.style.display = varias ? '' : 'none';
+  elLightboxSiguiente.style.display = varias ? '' : 'none';
+  elLightboxContador.style.display = varias ? '' : 'none';
+  elLightboxContador.textContent = (visor.indice + 1) + ' / ' + visor.fotos.length;
+}
+function moverLightbox(paso) {
+  const n = visor.fotos.length;
+  if (n < 2) return;
+  visor.indice = (visor.indice + paso + n) % n;
+  pintarLightbox();
+}
+function abrirLightbox(fotos, indice, alt) {
+  visor.fotos = fotos;
+  visor.indice = indice || 0;
+  pintarLightbox();
   elLightboxImg.alt = alt || '';
   elLightbox.classList.add('visible');
   // Entrada en el historial para que el boton "atras" del movil cierre el visor
@@ -697,10 +813,33 @@ function cerrarLightbox() {
   else ocultarLightbox();
 }
 document.getElementById('btnCerrarLightbox').addEventListener('click', cerrarLightbox);
+elLightboxAnterior.addEventListener('click', (ev) => { ev.stopPropagation(); moverLightbox(-1); });
+elLightboxSiguiente.addEventListener('click', (ev) => { ev.stopPropagation(); moverLightbox(1); });
+let toqueInicioX = null, deslizado = false;
+elLightbox.addEventListener('touchstart', (ev) => {
+  toqueInicioX = ev.touches.length === 1 ? ev.touches[0].clientX : null;
+  deslizado = false;
+}, { passive: true });
+elLightbox.addEventListener('touchend', (ev) => {
+  if (toqueInicioX === null) return;
+  const dx = ev.changedTouches[0].clientX - toqueInicioX;
+  toqueInicioX = null;
+  const conZoom = window.visualViewport && window.visualViewport.scale > 1.05;
+  if (!conZoom && Math.abs(dx) > 50 && visor.fotos.length > 1) {
+    deslizado = true; // evita que el "click" posterior cierre el visor
+    moverLightbox(dx < 0 ? 1 : -1);
+  }
+});
 elLightbox.addEventListener('click', (ev) => {
+  if (deslizado) { deslizado = false; return; }
   if (ev.target.id !== 'btnCerrarLightbox') cerrarLightbox();
 });
-document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrarLightbox(); });
+document.addEventListener('keydown', (ev) => {
+  if (!elLightbox.classList.contains('visible')) return;
+  if (ev.key === 'Escape') cerrarLightbox();
+  else if (ev.key === 'ArrowLeft') moverLightbox(-1);
+  else if (ev.key === 'ArrowRight') moverLightbox(1);
+});
 function alSalirDePantallaCompleta() {
   if (!document.fullscreenElement && !document.webkitFullscreenElement) cerrarLightbox();
 }
@@ -845,7 +984,10 @@ async function mostrarListado() {
       const comentario = r.comentario ? resaltar(r.comentario, terminos) : '';
       return `
         <a class="tarjeta" data-id="${escaparHtml(r.id)}">
-          <img class="miniatura" src="${r.imagenThumb || ''}" alt="">
+          <div class="miniatura-caja">
+            <img class="miniatura" src="${r.imagenThumb || ''}" alt="">
+            ${fotosDe(r).length > 1 ? `<span class="num-fotos">📷 ${fotosDe(r).length}</span>` : ''}
+          </div>
           <div class="info">
             <div class="fila-top">
               <span class="nombre-pieza">${resaltar(r.nombrePieza || '(sin nombre)', terminos)}</span>
@@ -916,15 +1058,11 @@ async function mostrarForm(idEdicion) {
   elMain.innerHTML = `
     <form id="formRegistro">
       <div class="campo">
-        <label>Foto de la pieza <span class="obligatorio">*</span></label>
-        <div id="imagenPicker" class="imagen-picker">
-          <img id="previewImagen" style="display:none">
-          <div class="icono">📷</div>
-          <div id="textoPicker">Toca para hacer una foto</div>
-          <input id="inputImagen" type="file" accept="image/*" capture="environment">
-        </div>
-        <button type="button" id="btnGaleria" class="enlace-galeria">🖼️ o elegir una foto de la galería</button>
-        <input id="inputGaleria" type="file" accept="image/*" hidden>
+        <label>Fotos de la pieza <span class="obligatorio">*</span> <span class="contador-fotos" id="contadorFotos"></span></label>
+        <div id="rejillaFotos" class="rejilla-fotos"></div>
+        <div class="ayuda-fotos">Hasta ${MAX_FOTOS} fotos. La primera es la principal.</div>
+        <input id="inputCamara" type="file" accept="image/*" capture="environment" hidden>
+        <input id="inputGaleria" type="file" accept="image/*" multiple hidden>
       </div>
       <div class="campo">
         <label>Nombre de la pieza <span class="obligatorio">*</span></label>
@@ -951,9 +1089,8 @@ async function mostrarForm(idEdicion) {
     </form>
   `;
 
-  const elImagenInput = document.getElementById('inputImagen');
-  const elImagenPicker = document.getElementById('imagenPicker');
-  const elPreview = document.getElementById('previewImagen');
+  const elRejillaFotos = document.getElementById('rejillaFotos');
+  const elContadorFotos = document.getElementById('contadorFotos');
   const elNombrePieza = document.getElementById('nombrePieza');
   const elCliente = document.getElementById('cliente');
   const elExpedicion = document.getElementById('expedicion');
@@ -963,8 +1100,8 @@ async function mostrarForm(idEdicion) {
   const elOperario = document.getElementById('operario');
   const elComentario = document.getElementById('comentario');
 
-  let imagenThumbActual = '';
-  let imagenFullActual = '';
+  let fotos = []; // [{ thumb, full }], la primera es la principal
+  let fotosProcesando = 0;
   let registroExistente = null;
 
   if (idEdicion) {
@@ -978,55 +1115,75 @@ async function mostrarForm(idEdicion) {
       elHora.value = registroExistente.hora || horaAhora();
       elOperario.value = registroExistente.operario || '';
       elComentario.value = registroExistente.comentario || '';
-      imagenThumbActual = registroExistente.imagenThumb || '';
-      imagenFullActual = registroExistente.imagenFull || '';
-      if (imagenFullActual) mostrarPreview(imagenFullActual);
+      fotos = fotosDe(registroExistente);
     }
   } else {
     elFecha.value = fechaHoyISO();
     elHora.value = horaAhora();
   }
 
-  function mostrarPreview(src) {
-    elPreview.src = src;
-    elPreview.style.display = 'block';
-    elImagenPicker.classList.add('con-imagen');
-  }
-
-  // Dos entradas: la del recuadro abre la camara directamente (capture) y la
-  // del enlace abre la galeria (con capture el movil no ofrece la galeria).
+  // Dos entradas ocultas: "Camara" abre la camara directamente (capture) y
+  // "Galeria" permite elegir una o varias fotos (con capture no se ofrece la galeria).
+  const elCamaraInput = document.getElementById('inputCamara');
   const elGaleriaInput = document.getElementById('inputGaleria');
-  const elTextoPicker = document.getElementById('textoPicker');
-  let procesandoFoto = false;
-  async function alElegirFoto(input) {
-    const file = input.files && input.files[0];
-    if (!file) return;
-    procesandoFoto = true;
-    elTextoPicker.textContent = 'Procesando foto…';
-    try {
-      const { thumb, full } = await prepararImagenes(file);
-      imagenThumbActual = thumb;
-      imagenFullActual = full;
-      mostrarPreview(full);
-    } catch (e) {
-      mostrarToast('No se pudo cargar la imagen');
-    } finally {
-      procesandoFoto = false;
-      elTextoPicker.textContent = 'Toca para hacer una foto';
-      input.value = ''; // permite volver a elegir el mismo archivo
+  function pintarFotos() {
+    const huecos = MAX_FOTOS - fotos.length - fotosProcesando;
+    elContadorFotos.textContent = fotos.length + ' / ' + MAX_FOTOS;
+    elRejillaFotos.innerHTML =
+      fotos.map((f, i) => `
+        <div class="foto-slot">
+          <img src="${f.thumb}" alt="Foto ${i + 1}">
+          <button type="button" class="quitar-foto" data-indice="${i}" aria-label="Quitar foto ${i + 1}">✕</button>
+          ${i === 0 ? '<span class="etiqueta-principal">Principal</span>' : ''}
+        </div>`).join('') +
+      '<div class="foto-slot foto-procesando">Procesando foto…</div>'.repeat(fotosProcesando) +
+      (huecos > 0 ? `
+        <div class="foto-slot foto-anadir">
+          <button type="button" data-accion="camara"><span class="icono">📷</span>Cámara</button>
+          <button type="button" data-accion="galeria"><span class="icono">🖼️</span>Galería</button>
+        </div>` : '');
+  }
+  elRejillaFotos.addEventListener('click', (ev) => {
+    const boton = ev.target.closest('button');
+    if (!boton) return;
+    if (boton.dataset.accion === 'camara') elCamaraInput.click();
+    else if (boton.dataset.accion === 'galeria') elGaleriaInput.click();
+    else if (boton.dataset.indice !== undefined) {
+      fotos.splice(Number(boton.dataset.indice), 1);
+      pintarFotos();
+    }
+  });
+  async function alElegirFotos(input) {
+    const huecos = MAX_FOTOS - fotos.length - fotosProcesando;
+    const archivos = Array.from(input.files || []);
+    input.value = ''; // permite volver a elegir el mismo archivo
+    if (!archivos.length || huecos <= 0) return;
+    if (archivos.length > huecos) mostrarToast(`Máximo ${MAX_FOTOS} fotos: se añaden solo ${huecos}`);
+    // Una a una para no agotar la memoria del movil con fotos grandes
+    for (const file of archivos.slice(0, huecos)) {
+      fotosProcesando++;
+      pintarFotos();
+      try {
+        fotos.push(await prepararImagenes(file));
+      } catch (e) {
+        mostrarToast('No se pudo cargar la imagen');
+      } finally {
+        fotosProcesando--;
+        pintarFotos();
+      }
     }
   }
-  elImagenInput.addEventListener('change', () => alElegirFoto(elImagenInput));
-  elGaleriaInput.addEventListener('change', () => alElegirFoto(elGaleriaInput));
-  document.getElementById('btnGaleria').addEventListener('click', () => elGaleriaInput.click());
+  elCamaraInput.addEventListener('change', () => alElegirFotos(elCamaraInput));
+  elGaleriaInput.addEventListener('change', () => alElegirFotos(elGaleriaInput));
+  pintarFotos();
 
   const elBtnGuardar = document.querySelector('#formRegistro button[type=submit]');
   let guardando = false;
   document.getElementById('formRegistro').addEventListener('submit', async (ev) => {
     ev.preventDefault();
     if (guardando) return;
-    if (procesandoFoto) { mostrarToast('Espera, procesando la foto…'); return; }
-    if (!imagenFullActual) { mostrarToast('Añade una foto de la pieza'); elImagenInput.focus(); return; }
+    if (fotosProcesando) { mostrarToast('Espera, procesando la foto…'); return; }
+    if (!fotos.length) { mostrarToast('Añade al menos una foto de la pieza'); return; }
     if (!elNombrePieza.value.trim()) { mostrarToast('Falta el nombre de la pieza'); elNombrePieza.focus(); return; }
     if (!elCliente.value.trim()) { mostrarToast('Falta el cliente'); elCliente.focus(); return; }
 
@@ -1042,8 +1199,9 @@ async function mostrarForm(idEdicion) {
       fechaHora: fecha + 'T' + hora,
       operario: elOperario.value.trim(),
       comentario: elComentario.value.trim(),
-      imagenThumb: imagenThumbActual,
-      imagenFull: imagenFullActual,
+      imagenThumb: fotos[0].thumb,
+      imagenFull: fotos[0].full,
+      fotosExtra: fotos.slice(1, MAX_FOTOS),
       creado: registroExistente ? registroExistente.creado : Date.now(),
       actualizado: Date.now()
     };
@@ -1096,8 +1254,12 @@ async function mostrarDetalle(id) {
     return;
   }
 
+  const fotos = fotosDe(r);
+  let fotoActual = 0;
   elContenido.innerHTML = `
-    <img class="detalle-imagen" src="${r.imagenFull}" alt="${escaparHtml(r.nombrePieza)}">
+    <img class="detalle-imagen" src="${fotos.length ? fotos[0].full : ''}" alt="${escaparHtml(r.nombrePieza)}">
+    ${fotos.length > 1 ? `<div class="detalle-miniaturas">${fotos.map((f, i) =>
+      `<img src="${f.thumb}" data-indice="${i}" class="${i === 0 ? 'activa' : ''}" alt="Foto ${i + 1}">`).join('')}</div>` : '<div style="height:6px"></div>'}
     <div class="ficha">
       ${filaDetalle('Nombre de pieza', r.nombrePieza)}
       ${filaDetalle('Cliente', r.cliente)}
@@ -1119,7 +1281,16 @@ async function mostrarDetalle(id) {
   });
 
   const elImagenDetalle = elContenido.querySelector('.detalle-imagen');
-  if (elImagenDetalle) elImagenDetalle.addEventListener('click', () => abrirLightbox(r.imagenFull, r.nombrePieza));
+  if (elImagenDetalle && fotos.length) {
+    elImagenDetalle.addEventListener('click', () => abrirLightbox(fotos.map((f) => f.full), fotoActual, r.nombrePieza));
+  }
+  elContenido.querySelectorAll('.detalle-miniaturas img').forEach((el) => {
+    el.addEventListener('click', () => {
+      fotoActual = Number(el.dataset.indice);
+      elImagenDetalle.src = fotos[fotoActual].full;
+      elContenido.querySelectorAll('.detalle-miniaturas img').forEach((m) => m.classList.toggle('activa', m === el));
+    });
+  });
 }
 
 // ---------- Service worker: funciona sin conexion e instalable como app ----------
