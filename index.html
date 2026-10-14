@@ -314,6 +314,65 @@ main {
 }
 .fab:active { background: var(--azul-oscuro); }
 
+/* --- Seleccion multiple (eliminar en bloque) --- */
+.fila-contador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-height: 36px;
+}
+.fila-contador .contador-resultados { margin-bottom: 0; }
+.btn-seleccionar {
+  flex: none;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gris-borde);
+  background: #fff;
+  color: var(--azul);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+header.app-bar.seleccion { background: #334155; }
+.tarjeta .check {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--gris-borde);
+  background: #fff;
+  color: transparent;
+  font-size: 14px;
+  font-weight: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sombra);
+}
+.modo-seleccion .tarjeta .check { display: flex; }
+.modo-seleccion .tarjeta.seleccionada { background: #eff6ff; box-shadow: 0 0 0 2px var(--azul); }
+.modo-seleccion .tarjeta.seleccionada .check { background: var(--azul); border-color: #fff; color: #fff; }
+.modo-seleccion .fab { display: none; }
+.barra-seleccion {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: #fff;
+  box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.1);
+  display: none;
+}
+.modo-seleccion .barra-seleccion { display: block; }
+.barra-seleccion .btn { width: 100%; max-width: 720px; margin: 0 auto; }
+.btn-peligro-lleno { background: var(--rojo); color: #fff; }
+
 /* --- Formulario --- */
 .campo { margin-bottom: 16px; }
 .campo label {
@@ -867,7 +926,8 @@ const PiezasDB = {
   async guardar(registro) { return conTransaccion('readwrite', (store) => promesa(store.put(registro))); },
   async obtener(id) { return conTransaccion('readonly', (store) => promesa(store.get(id))); },
   async eliminar(id) { return conTransaccion('readwrite', (store) => promesa(store.delete(id))); },
-  async listarTodos() { return conTransaccion('readonly', (store) => promesa(store.getAll())); }
+  async listarTodos() { return conTransaccion('readonly', (store) => promesa(store.getAll())); },
+  async eliminarVarios(ids) { return conTransaccion('readwrite', (store) => Promise.all(ids.map((id) => promesa(store.delete(id))))); }
 };
 
 // ---------- Router minimo (3 vistas, sin cambiar de URL) ----------
@@ -956,6 +1016,8 @@ let toastPendiente = '';
 function claveDe(estado) { return estado.vista + ':' + (estado.id || ''); }
 async function pintarEstado(estado) {
   claveVistaActual = claveDe(estado);
+  elMain.classList.remove('modo-seleccion');
+  elHeader.classList.remove('seleccion');
   const toast = toastPendiente;
   toastPendiente = '';
   if (estado.vista === 'form') await mostrarForm(estado.id || null);
@@ -973,6 +1035,15 @@ window.addEventListener('popstate', (ev) => {
   const estado = ev.state || { vista: 'listado' };
   if (elLightbox.classList.contains('visible')) ocultarLightbox();
   if (estado.lightbox) { history.back(); return; } // no reabrir el visor al ir "adelante"
+  if (estado.seleccion && !estadoListado.seleccionando) { history.back(); return; } // idem modo seleccion
+  if (estadoListado.seleccionando && !estado.seleccion) {
+    estadoListado.seleccionando = false;
+    estadoListado.seleccionados.clear();
+    if (claveDe(estado) === claveVistaActual && !toastPendiente && estadoListado.repintarModo) {
+      estadoListado.repintarModo();
+      return;
+    }
+  }
   if (claveDe(estado) !== claveVistaActual || toastPendiente) pintarEstado(estado);
 });
 
@@ -988,7 +1059,10 @@ const CAMPOS_ORDEN = {
   operario: { etiqueta: 'Operario', tipo: 'texto' }
 };
 
-const estadoListado = { registros: [], busqueda: '', orden: 'fechaHora', direccion: 'desc' };
+const estadoListado = {
+  registros: [], busqueda: '', orden: 'fechaHora', direccion: 'desc',
+  seleccionando: false, seleccionados: new Set(), repintarModo: null
+};
 
 try {
   const guardado = JSON.parse(localStorage.getItem('piezas_prefs_orden') || 'null');
@@ -1027,9 +1101,8 @@ function filtrarYOrdenarListado() {
 }
 
 async function mostrarListado() {
-  elHeader.innerHTML = `<h1>📦 Registro Piezas Laser</h1>
-    <button type="button" class="accion-header" id="btnExportar">📤 Exportar</button>`;
-  document.getElementById('btnExportar').addEventListener('click', () => irA({ vista: 'exportar' }));
+  estadoListado.seleccionando = false;
+  estadoListado.seleccionados.clear();
   elMain.innerHTML = `
     <div class="barra-busqueda">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1049,10 +1122,16 @@ async function mostrarListado() {
       </select>
       <button id="btnDireccion"></button>
     </div>
-    <div id="contadorResultados" class="contador-resultados"></div>
+    <div class="fila-contador">
+      <div id="contadorResultados" class="contador-resultados"></div>
+      <button type="button" id="btnSeleccionar" class="btn-seleccionar">☑️ Seleccionar</button>
+    </div>
     <div id="listaRegistros" class="lista-registros"></div>
     <div id="espacioUsado" class="espacio-usado"></div>
     <button id="btnNuevo" class="fab" aria-label="Nuevo registro">+</button>
+    <div class="barra-seleccion">
+      <button type="button" id="btnEliminarSeleccion" class="btn btn-peligro-lleno">🗑️ Eliminar</button>
+    </div>
   `;
 
   const elBuscador = document.getElementById('inputBuscar');
@@ -1061,6 +1140,76 @@ async function mostrarListado() {
   const elDireccion = document.getElementById('btnDireccion');
   const elContador = document.getElementById('contadorResultados');
   const elLista = document.getElementById('listaRegistros');
+  const elBtnSeleccionar = document.getElementById('btnSeleccionar');
+  const elBtnEliminarSel = document.getElementById('btnEliminarSeleccion');
+  let visibles = []; // registros que se ven ahora (tras buscar/ordenar)
+
+  // ---- Cabecera normal o de seleccion ----
+  function pintarCabecera() {
+    elHeader.classList.toggle('seleccion', estadoListado.seleccionando);
+    if (!estadoListado.seleccionando) {
+      elHeader.innerHTML = `<h1>📦 Registro Piezas Laser</h1>
+        <button type="button" class="accion-header" id="btnExportar">📤 Exportar</button>`;
+      document.getElementById('btnExportar').addEventListener('click', () => irA({ vista: 'exportar' }));
+      return;
+    }
+    elHeader.innerHTML = `<button type="button" class="volver" id="btnSalirSeleccion" aria-label="Cancelar selección">✕</button>
+      <h1 id="tituloSeleccion"></h1>
+      <button type="button" class="accion-header" id="btnSeleccionarTodos"></button>`;
+    document.getElementById('btnSalirSeleccion').addEventListener('click', () => history.back());
+    document.getElementById('btnSeleccionarTodos').addEventListener('click', () => {
+      const todosMarcados = visibles.length > 0 && visibles.every((r) => estadoListado.seleccionados.has(r.id));
+      visibles.forEach((r) => {
+        if (todosMarcados) estadoListado.seleccionados.delete(r.id);
+        else estadoListado.seleccionados.add(r.id);
+      });
+      elLista.querySelectorAll('.tarjeta').forEach((el) =>
+        el.classList.toggle('seleccionada', estadoListado.seleccionados.has(el.dataset.id)));
+      actualizarSeleccion();
+    });
+    actualizarSeleccion();
+  }
+  function actualizarSeleccion() {
+    if (!estadoListado.seleccionando) return;
+    const n = estadoListado.seleccionados.size;
+    const titulo = document.getElementById('tituloSeleccion');
+    if (titulo) titulo.textContent = n === 0 ? 'Toca para seleccionar' : `${n} seleccionado${n === 1 ? '' : 's'}`;
+    const todos = document.getElementById('btnSeleccionarTodos');
+    const todosMarcados = visibles.length > 0 && visibles.every((r) => estadoListado.seleccionados.has(r.id));
+    if (todos) todos.textContent = todosMarcados ? 'Ninguno' : 'Todos';
+    elBtnEliminarSel.disabled = n === 0;
+    elBtnEliminarSel.textContent = n === 0 ? '🗑️ Eliminar' : `🗑️ Eliminar ${n} registro${n === 1 ? '' : 's'}`;
+  }
+  function repintarModo() {
+    elMain.classList.toggle('modo-seleccion', estadoListado.seleccionando);
+    pintarCabecera();
+    render();
+  }
+  estadoListado.repintarModo = repintarModo;
+
+  elBtnSeleccionar.addEventListener('click', () => {
+    // Entrada en el historial: el "atras" del movil sale del modo seleccion sin borrar nada
+    history.pushState({ vista: 'listado', seleccion: true }, '');
+    estadoListado.seleccionando = true;
+    estadoListado.seleccionados.clear();
+    repintarModo();
+  });
+  elBtnEliminarSel.addEventListener('click', async () => {
+    const ids = [...estadoListado.seleccionados];
+    if (!ids.length) return;
+    const n = ids.length;
+    if (!confirm(`¿Eliminar ${n} registro${n === 1 ? '' : 's'} con sus fotos? Esta acción no se puede deshacer.`)) return;
+    elBtnEliminarSel.disabled = true;
+    try {
+      await PiezasDB.eliminarVarios(ids);
+    } catch (e) {
+      elBtnEliminarSel.disabled = false;
+      mostrarToast('No se pudieron eliminar: ' + textoError(e));
+      return;
+    }
+    toastPendiente = `${n} registro${n === 1 ? ' eliminado' : 's eliminados'}`;
+    history.back(); // sale del modo seleccion y el listado se recarga
+  });
 
   elOrden.value = estadoListado.orden;
   elBuscador.value = estadoListado.busqueda;
@@ -1073,7 +1222,15 @@ async function mostrarListado() {
 
   function render() {
     const lista = filtrarYOrdenarListado();
+    visibles = lista;
     const terminos = estadoListado.busqueda.trim().split(/\s+/).filter(Boolean);
+    elBtnSeleccionar.style.display = estadoListado.registros.length && !estadoListado.seleccionando ? '' : 'none';
+    if (estadoListado.seleccionando) {
+      // Solo se pueden borrar los que se ven: si la busqueda oculta alguno, se desmarca
+      const ids = new Set(lista.map((r) => r.id));
+      [...estadoListado.seleccionados].forEach((id) => { if (!ids.has(id)) estadoListado.seleccionados.delete(id); });
+      actualizarSeleccion();
+    }
 
     elContador.textContent = estadoListado.registros.length === 0 ? '' :
       `${lista.length} de ${estadoListado.registros.length} registro${estadoListado.registros.length === 1 ? '' : 's'}`;
@@ -1090,8 +1247,9 @@ async function mostrarListado() {
     elLista.innerHTML = lista.map((r) => {
       const comentario = r.comentario ? resaltar(r.comentario, terminos) : '';
       return `
-        <a class="tarjeta" data-id="${escaparHtml(r.id)}">
+        <a class="tarjeta${estadoListado.seleccionados.has(r.id) ? ' seleccionada' : ''}" data-id="${escaparHtml(r.id)}">
           <div class="miniatura-caja">
+            <span class="check">✓</span>
             <img class="miniatura" src="${r.imagenThumb || ''}" alt="">
             ${fotosDe(r).length > 1 ? `<span class="num-fotos">📷 ${fotosDe(r).length}</span>` : ''}
           </div>
@@ -1112,7 +1270,14 @@ async function mostrarListado() {
     }).join('');
 
     elLista.querySelectorAll('.tarjeta').forEach((el) => {
-      el.addEventListener('click', () => irA({ vista: 'detalle', id: el.dataset.id }));
+      el.addEventListener('click', () => {
+        if (!estadoListado.seleccionando) { irA({ vista: 'detalle', id: el.dataset.id }); return; }
+        const id = el.dataset.id;
+        if (estadoListado.seleccionados.has(id)) estadoListado.seleccionados.delete(id);
+        else estadoListado.seleccionados.add(id);
+        el.classList.toggle('seleccionada', estadoListado.seleccionados.has(id));
+        actualizarSeleccion();
+      });
     });
   }
 
@@ -1141,6 +1306,8 @@ async function mostrarListado() {
   });
   document.getElementById('btnNuevo').addEventListener('click', () => irA({ vista: 'form' }));
 
+  elMain.classList.remove('modo-seleccion');
+  pintarCabecera();
   pintarEspacioUsado(document.getElementById('espacioUsado'));
   estadoListado.registros = await PiezasDB.listarTodos();
   render();
