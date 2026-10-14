@@ -85,7 +85,25 @@ header.app-bar h1 {
   font-weight: 600;
   margin: 0;
   flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+header.app-bar .accion-header {
+  flex: none;
+  min-height: 40px;
+  padding: 0 12px;
+  margin: -6px -4px -6px 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+header.app-bar .accion-header:active { background: rgba(255, 255, 255, 0.25); }
 
 main {
   padding: 14px;
@@ -326,9 +344,10 @@ main {
 .campo .obligatorio { color: var(--rojo); }
 .dos-columnas {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px;
 }
+.dos-columnas input { min-width: 0; }
 
 /* Rejilla de hasta 3 fotos en el formulario */
 .campo label .contador-fotos { float: right; font-weight: 500; }
@@ -577,6 +596,63 @@ mark {
   border-radius: 999px;
 }
 
+/* --- Espacio usado (listado) --- */
+.espacio-usado {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--texto-suave);
+  text-align: center;
+}
+.espacio-usado .barra {
+  height: 6px;
+  max-width: 260px;
+  margin: 6px auto 0;
+  border-radius: 999px;
+  background: var(--gris-borde);
+  overflow: hidden;
+}
+.espacio-usado .barra > div { height: 100%; background: var(--verde); }
+.espacio-usado.alto .barra > div { background: var(--rojo); }
+.espacio-usado.alto { color: var(--rojo); }
+
+/* --- Exportar --- */
+.panel {
+  background: #fff;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.panel .campo:last-child { margin-bottom: 0; }
+.atajos-fecha { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.atajos-fecha button {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gris-borde);
+  background: var(--gris-fondo);
+  color: var(--texto);
+  font-size: 14px;
+  cursor: pointer;
+}
+.atajos-fecha button:active { background: var(--gris-borde); }
+.exp-resumen { font-size: 15px; line-height: 1.5; }
+.exp-resumen b { font-size: 17px; }
+.aviso-tamano {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #78350f;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.exp-listo { margin-top: 14px; }
+.exp-listo .nombre-archivo { font-size: 14px; margin-bottom: 12px; word-break: break-all; }
+.exp-listo .btn + .btn { margin-top: 10px; }
+.exp-listo .btn { width: 100%; }
+
 .aviso-error {
   background: #fff;
   border: 1px solid #fecaca;
@@ -676,6 +752,12 @@ async function prepararImagenes(file) {
   const resultado = { full: grande.toDataURL('image/jpeg', 0.85), thumb: mini.toDataURL('image/jpeg', 0.65) };
   grande.width = grande.height = mini.width = mini.height = 0; // liberar memoria (iOS)
   return resultado;
+}
+function formatearTamano(bytes) {
+  const num = (n, dec) => n.toLocaleString('es-ES', { maximumFractionDigits: dec });
+  if (bytes < 1024 * 1024) return num(Math.max(1, Math.round(bytes / 1024)), 0) + ' KB';
+  if (bytes < 1024 * 1024 * 1024) return num(bytes / 1024 / 1024, bytes < 10 * 1024 * 1024 ? 1 : 0) + ' MB';
+  return num(bytes / 1024 / 1024 / 1024, 1) + ' GB';
 }
 function mostrarToast(mensaje) {
   let toast = document.querySelector('.toast');
@@ -857,6 +939,7 @@ async function pintarEstado(estado) {
   toastPendiente = '';
   if (estado.vista === 'form') await mostrarForm(estado.id || null);
   else if (estado.vista === 'detalle') await mostrarDetalle(estado.id);
+  else if (estado.vista === 'exportar') await mostrarExportar();
   else await mostrarListado();
   window.scrollTo(0, 0);
   if (toast) setTimeout(() => mostrarToast(toast), 150);
@@ -923,7 +1006,9 @@ function filtrarYOrdenarListado() {
 }
 
 async function mostrarListado() {
-  elHeader.innerHTML = `<h1>📦 Registro Piezas Laser</h1>`;
+  elHeader.innerHTML = `<h1>📦 Registro Piezas Laser</h1>
+    <button type="button" class="accion-header" id="btnExportar">📤 Exportar</button>`;
+  document.getElementById('btnExportar').addEventListener('click', () => irA({ vista: 'exportar' }));
   elMain.innerHTML = `
     <div class="barra-busqueda">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -945,6 +1030,7 @@ async function mostrarListado() {
     </div>
     <div id="contadorResultados" class="contador-resultados"></div>
     <div id="listaRegistros" class="lista-registros"></div>
+    <div id="espacioUsado" class="espacio-usado"></div>
     <button id="btnNuevo" class="fab" aria-label="Nuevo registro">+</button>
   `;
 
@@ -1034,8 +1120,23 @@ async function mostrarListado() {
   });
   document.getElementById('btnNuevo').addEventListener('click', () => irA({ vista: 'form' }));
 
+  pintarEspacioUsado(document.getElementById('espacioUsado'));
   estadoListado.registros = await PiezasDB.listarTodos();
   render();
+}
+
+// Espacio que ocupan los datos de la app en el movil (lo calcula el navegador)
+async function pintarEspacioUsado(el) {
+  if (!el || !navigator.storage || !navigator.storage.estimate) return;
+  try {
+    const { usage, quota } = await navigator.storage.estimate();
+    if (!quota) return;
+    const pct = Math.min(100, (usage / quota) * 100);
+    el.classList.toggle('alto', pct >= 80);
+    el.innerHTML = `💾 Espacio usado: <b>${formatearTamano(usage)}</b> de ${formatearTamano(quota)} disponibles
+      ${pct >= 80 ? '<br>Queda poco espacio: exporta y elimina registros antiguos.' : ''}
+      <div class="barra"><div style="width:${Math.max(pct, 1).toFixed(1)}%"></div></div>`;
+  } catch (e) { /* sin estimacion: no se muestra */ }
 }
 
 // ============================================================
@@ -1290,6 +1391,241 @@ async function mostrarDetalle(id) {
       elImagenDetalle.src = fotos[fotoActual].full;
       elContenido.querySelectorAll('.detalle-miniaturas img').forEach((m) => m.classList.toggle('activa', m === el));
     });
+  });
+}
+
+// ============================================================
+// VISTA: EXPORTAR (PDF con fotos de un rango de fechas)
+// ============================================================
+// Por encima de este tamano se avisa: el correo suele admitir 20-25 MB por mensaje.
+const AVISO_TAMANO_PDF = 15 * 1024 * 1024;
+let promesaJsPDF = null;
+function cargarJsPDF() {
+  if (window.jspdf) return Promise.resolve(window.jspdf);
+  if (!promesaJsPDF) {
+    promesaJsPDF = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'vendor/jspdf.umd.min.js';
+      script.onload = () => resolve(window.jspdf);
+      script.onerror = () => { promesaJsPDF = null; reject(new Error('No se pudo cargar el generador de PDF')); };
+      document.head.appendChild(script);
+    });
+  }
+  return promesaJsPDF;
+}
+function fechaISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+// Las fuentes estandar del PDF solo tienen caracteres latinos: se quitan emojis y similares
+function textoPdf(texto) {
+  return String(texto == null ? '' : texto)
+    .replace(/[“”«»]/g, '"').replace(/[‘’]/g, "'").replace(/[–—]/g, '-').replace(/…/g, '...')
+    .replace(/[^\n\x20-\x7E\xA0-\xFF€]/g, '');
+}
+function tamanoEstimadoPdf(registros) {
+  return registros.reduce((total, r) =>
+    total + 3000 + fotosDe(r).reduce((t, f) => t + f.full.length * 0.75, 0), 20000);
+}
+
+async function generarPdf(registros, desde, hasta, alProgresar) {
+  const { jsPDF } = await cargarJsPDF();
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', compress: true });
+  const ANCHO = 210, ALTO = 297, MARGEN = 14, PIE = 12;
+  const util = ANCHO - MARGEN * 2;
+  const GAP = 4, ALTO_FOTO = 56, ancho_foto = (util - GAP * 2) / 3;
+  let y = MARGEN;
+
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.setTextColor(15, 23, 42);
+  doc.text('Registro Piezas Laser', MARGEN, y + 6);
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(100, 116, 139);
+  doc.text(`Registros del ${formatearFechaCorta(desde)} al ${formatearFechaCorta(hasta)}`, MARGEN, y + 13);
+  doc.text(`${registros.length} registro${registros.length === 1 ? '' : 's'} - generado el ${formatearFechaCorta(fechaHoyISO())} a las ${horaAhora()}`, MARGEN, y + 19);
+  y += 24;
+  doc.setDrawColor(37, 99, 235); doc.setLineWidth(0.6); doc.line(MARGEN, y, ANCHO - MARGEN, y);
+  y += 7;
+
+  for (let i = 0; i < registros.length; i++) {
+    const r = registros[i];
+    const fotos = fotosDe(r);
+    doc.setFontSize(10);
+    const datos = [
+      ['Cliente', r.cliente], ['Expedición', r.expedicion], ['Cantidad', r.cantidad], ['Operario', r.operario]
+    ].filter(([, v]) => v !== null && v !== undefined && v !== '')
+      .map(([k, v]) => `${k}: ${v}`).join('     ');
+    const lineasDatos = datos ? doc.splitTextToSize(textoPdf(datos), util) : [];
+    doc.setFontSize(9.5);
+    const lineasComentario = r.comentario ? doc.splitTextToSize(textoPdf('Comentario: ' + r.comentario), util) : [];
+    const alto = 7 + lineasDatos.length * 5 + lineasComentario.length * 4.5 + (fotos.length ? ALTO_FOTO + 3 : 0) + 8;
+    if (y + alto > ALTO - MARGEN - PIE && y > MARGEN + 1) { doc.addPage(); y = MARGEN; }
+
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(15, 23, 42);
+    const fechaTxt = formatearFechaCorta(r.fecha) + (r.hora ? '  ' + r.hora : '');
+    doc.text(doc.splitTextToSize(textoPdf(r.nombrePieza || '(sin nombre)'), util - 40)[0], MARGEN, y + 4);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor(100, 116, 139);
+    doc.text(fechaTxt, ANCHO - MARGEN, y + 4, { align: 'right' });
+    y += 9;
+    doc.setTextColor(15, 23, 42);
+    lineasDatos.forEach((l) => { doc.text(l, MARGEN, y); y += 5; });
+    if (lineasComentario.length) {
+      doc.setFontSize(9.5); doc.setTextColor(71, 85, 105);
+      lineasComentario.forEach((l) => { doc.text(l, MARGEN, y); y += 4.5; });
+    }
+    if (fotos.length) {
+      y += 1;
+      fotos.forEach((f, j) => {
+        const props = doc.getImageProperties(f.full);
+        const escala = Math.min(ancho_foto / props.width, ALTO_FOTO / props.height);
+        const w = props.width * escala, h = props.height * escala;
+        const x = MARGEN + j * (ancho_foto + GAP);
+        doc.setFillColor(241, 245, 249); doc.rect(x, y, ancho_foto, ALTO_FOTO, 'F');
+        doc.addImage(f.full, 'JPEG', x + (ancho_foto - w) / 2, y + (ALTO_FOTO - h) / 2, w, h, undefined, 'NONE');
+      });
+      y += ALTO_FOTO + 2;
+    }
+    y += 3;
+    doc.setDrawColor(226, 232, 240); doc.setLineWidth(0.3); doc.line(MARGEN, y, ANCHO - MARGEN, y);
+    y += 5;
+    alProgresar(i + 1);
+    await new Promise((res) => setTimeout(res, 0)); // deja respirar a la pantalla
+  }
+
+  const paginas = doc.getNumberOfPages();
+  for (let p = 1; p <= paginas; p++) {
+    doc.setPage(p);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(148, 163, 184);
+    doc.text(`Página ${p} de ${paginas}`, ANCHO / 2, ALTO - 8, { align: 'center' });
+  }
+  return doc.output('blob');
+}
+
+async function mostrarExportar() {
+  elHeader.innerHTML = `<button type="button" class="volver" id="btnVolverExportar" aria-label="Volver">←</button><h1>Exportar a PDF</h1>`;
+  document.getElementById('btnVolverExportar').addEventListener('click', () => history.back());
+  elMain.innerHTML = `
+    <div class="panel">
+      <div class="dos-columnas">
+        <div class="campo"><label>Desde</label><input id="expDesde" type="date"></div>
+        <div class="campo"><label>Hasta</label><input id="expHasta" type="date"></div>
+      </div>
+      <div class="atajos-fecha">
+        <button type="button" data-rango="hoy">Hoy</button>
+        <button type="button" data-rango="semana">Últimos 7 días</button>
+        <button type="button" data-rango="mes">Este mes</button>
+        <button type="button" data-rango="mesPasado">Mes pasado</button>
+        <button type="button" data-rango="todo">Todo</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div id="expResumen" class="exp-resumen">Cargando…</div>
+      <div id="expAviso" class="aviso-tamano" hidden></div>
+    </div>
+    <button type="button" id="btnGenerarPdf" class="btn btn-primario" style="width:100%">📄 Generar PDF</button>
+    <div id="expResultado" class="exp-listo"></div>
+  `;
+  const elDesde = document.getElementById('expDesde');
+  const elHasta = document.getElementById('expHasta');
+  const elResumen = document.getElementById('expResumen');
+  const elAviso = document.getElementById('expAviso');
+  const elGenerar = document.getElementById('btnGenerarPdf');
+  const elResultado = document.getElementById('expResultado');
+
+  let todos = [];
+  const hoy = new Date();
+  elDesde.value = fechaISO(new Date(hoy.getFullYear(), hoy.getMonth(), 1));
+  elHasta.value = fechaHoyISO();
+
+  function registrosEnRango() {
+    let desde = elDesde.value || '0000-01-01', hasta = elHasta.value || '9999-12-31';
+    if (desde > hasta) [desde, hasta] = [hasta, desde];
+    return todos.filter((r) => r.fecha >= desde && r.fecha <= hasta)
+      .sort((a, b) => (a.fechaHora || '').localeCompare(b.fechaHora || ''));
+  }
+  function actualizarResumen() {
+    elResultado.innerHTML = '';
+    const lista = registrosEnRango();
+    const numFotos = lista.reduce((t, r) => t + fotosDe(r).length, 0);
+    const tamano = tamanoEstimadoPdf(lista);
+    elGenerar.disabled = lista.length === 0;
+    elResumen.innerHTML = lista.length === 0
+      ? 'No hay registros entre esas fechas.'
+      : `<b>${lista.length}</b> registro${lista.length === 1 ? '' : 's'} · ${numFotos} foto${numFotos === 1 ? '' : 's'}<br>
+         Tamaño aproximado del PDF: <b>${formatearTamano(tamano)}</b>`;
+    elAviso.hidden = tamano < AVISO_TAMANO_PDF;
+    elAviso.innerHTML = `⚠️ <b>El PDF puede ser muy grande (unos ${formatearTamano(tamano)}).</b>
+      Puede tardar en generarse y ser demasiado pesado para mandarlo por correo
+      (el límite suele estar en 20–25 MB). Te recomendamos <b>exportar menos registros
+      acortando el rango de fechas</b>, por ejemplo mes a mes.`;
+  }
+  function ponerRango(tipo) {
+    const d = new Date();
+    if (tipo === 'hoy') { elDesde.value = elHasta.value = fechaHoyISO(); }
+    else if (tipo === 'semana') { elHasta.value = fechaHoyISO(); elDesde.value = fechaISO(new Date(d.getFullYear(), d.getMonth(), d.getDate() - 6)); }
+    else if (tipo === 'mes') { elDesde.value = fechaISO(new Date(d.getFullYear(), d.getMonth(), 1)); elHasta.value = fechaHoyISO(); }
+    else if (tipo === 'mesPasado') {
+      elDesde.value = fechaISO(new Date(d.getFullYear(), d.getMonth() - 1, 1));
+      elHasta.value = fechaISO(new Date(d.getFullYear(), d.getMonth(), 0));
+    } else if (tipo === 'todo') {
+      const fechas = todos.map((r) => r.fecha).filter(Boolean).sort();
+      elDesde.value = fechas[0] || fechaHoyISO();
+      elHasta.value = fechas[fechas.length - 1] || fechaHoyISO();
+    }
+    actualizarResumen();
+  }
+  document.querySelector('.atajos-fecha').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button[data-rango]');
+    if (b) ponerRango(b.dataset.rango);
+  });
+  elDesde.addEventListener('change', actualizarResumen);
+  elHasta.addEventListener('change', actualizarResumen);
+  elGenerar.disabled = true;
+  todos = await PiezasDB.listarTodos();
+  actualizarResumen();
+
+  elGenerar.addEventListener('click', async () => {
+    const lista = registrosEnRango();
+    if (!lista.length) return;
+    let desde = elDesde.value || lista[0].fecha, hasta = elHasta.value || lista[lista.length - 1].fecha;
+    if (desde > hasta) [desde, hasta] = [hasta, desde];
+    elGenerar.disabled = true;
+    elResultado.innerHTML = '';
+    elGenerar.textContent = 'Preparando…';
+    let blob;
+    try {
+      blob = await generarPdf(lista, desde, hasta, (n) => { elGenerar.textContent = `Generando PDF… ${n} / ${lista.length}`; });
+    } catch (e) {
+      mostrarToast('No se pudo generar el PDF: ' + textoError(e));
+      return;
+    } finally {
+      elGenerar.disabled = false;
+      elGenerar.textContent = '📄 Generar PDF';
+    }
+    const nombre = `registros-piezas_${desde}_a_${hasta}.pdf`;
+    const archivo = new File([blob], nombre, { type: 'application/pdf' });
+    const sePuedeCompartir = !!(navigator.canShare && navigator.canShare({ files: [archivo] }));
+    elResultado.innerHTML = `
+      <div class="panel">
+        <div class="nombre-archivo">✅ PDF listo: <b>${escaparHtml(nombre)}</b> (${formatearTamano(blob.size)})</div>
+        ${sePuedeCompartir ? '<button type="button" id="btnCompartirPdf" class="btn btn-primario">📤 Compartir (correo, WhatsApp…)</button>' : ''}
+        <button type="button" id="btnDescargarPdf" class="btn btn-secundario">⬇️ Descargar</button>
+      </div>`;
+    if (sePuedeCompartir) {
+      // Se comparte con un toque nuevo: el movil solo deja abrir el menu de compartir justo tras tocar
+      document.getElementById('btnCompartirPdf').addEventListener('click', () => {
+        navigator.share({ files: [archivo], title: nombre, text: `Registros de piezas del ${formatearFechaCorta(desde)} al ${formatearFechaCorta(hasta)}` })
+          .catch((e) => { if (e.name !== 'AbortError') mostrarToast('No se pudo compartir: ' + textoError(e)); });
+      });
+    }
+    document.getElementById('btnDescargarPdf').addEventListener('click', () => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = nombre;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    });
+    elResultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 }
 

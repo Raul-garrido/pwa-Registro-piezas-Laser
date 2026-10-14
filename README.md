@@ -25,6 +25,7 @@ Servida por https se abre en cualquier móvil, se instala como app y funciona si
 - `manifest.webmanifest` — nombre, colores e iconos para instalarla.
 - `sw.js` — service worker (funcionamiento sin conexión). Al cambiar la app, sube `CACHE` (`registro-piezas-v2`, ...).
 - `icons/` — iconos de la app.
+- `vendor/jspdf.umd.min.js` — librería jsPDF 4.2.1 (MIT) para generar el PDF en el propio móvil, sin conexión.
 
 ## Actualizaciones sin perder datos
 Los registros se guardan en IndexedDB (`piezasDB` / `registros`) en cada móvil y no se
