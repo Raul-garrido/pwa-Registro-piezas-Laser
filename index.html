@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<title>Registro Piezas Laser</title>
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Registro Piezas Laser">
+<meta name="application-name" content="Registro Piezas Laser">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+:root {
+  --azul: #2563eb;
+  --azul-oscuro: #1d4ed8;
+  --gris-fondo: #f1f5f9;
+  --gris-borde: #e2e8f0;
+  --texto: #0f172a;
+  --texto-suave: #64748b;
+  --rojo: #dc2626;
+  --verde: #16a34a;
+  --radio: 14px;
+  --sombra: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--gris-fondo);
+  color: var(--texto);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+  min-height: 100vh;
+}
+
+a { color: inherit; text-decoration: none; }
+
+header.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--azul);
+  color: #fff;
+  padding: 14px 16px;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--sombra);
+}
+
+header.app-bar .volver {
+  font-size: 22px;
+  line-height: 1;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -10px 0 -10px -12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  border-radius: 10px;
+  cursor: pointer;
+}
+header.app-bar .volver:active { background: rgba(255,255,255,0.15); }
+
+header.app-bar h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+main {
+  padding: 14px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* --- Buscador y orden --- */
+.barra-busqueda {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--gris-borde);
+  border-radius: 999px;
+  padding: 10px 16px;
+  gap: 8px;
+  box-shadow: var(--sombra);
+  margin-bottom: 10px;
+}
+.barra-busqueda svg { flex: none; opacity: 0.5; }
+.barra-busqueda input {
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  background: transparent;
+}
+.barra-busqueda .limpiar {
+  display: none;
+  border: none;
+  background: var(--gris-borde);
+  color: var(--texto-suave);
+  width: 30px;
+  height: 30px;
+  margin: -4px -8px -4px 0;
+  border-radius: 50%;
+  font-size: 14px;
+  flex: none;
+  cursor: pointer;
+}
+
+.fila-orden {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+.fila-orden select {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--gris-borde);
+  background: #fff;
+  font-size: 16px;
+  color: var(--texto);
+}
+.fila-orden button#btnDireccion {
+  border: 1px solid var(--gris-borde);
+  background: #fff;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 9px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.contador-resultados {
+  font-size: 13px;
+  color: var(--texto-suave);
+  margin-bottom: 10px;
+}
+
+/* --- Listado --- */
+.lista-registros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tarjeta {
+  background: #fff;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.08s ease;
+}
+.tarjeta:active { transform: scale(0.98); }
+
+.tarjeta .miniatura {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--gris-fondo);
+  flex: none;
+}
+
+.tarjeta .info { flex: 1; min-width: 0; }
+
+.tarjeta .fila-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.tarjeta .nombre-pieza {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tarjeta .fecha-hora {
+  font-size: 12px;
+  color: var(--texto-suave);
+  flex: none;
+  white-space: nowrap;
+}
+
+.tarjeta .fila-meta {
+  font-size: 13px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.tarjeta .fila-meta b { color: var(--texto); font-weight: 500; }
+
+.tarjeta .fila-extra {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+  align-items: center;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: var(--azul-oscuro);
+}
+
+.comentario-preview {
+  font-size: 12px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.vacio {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--texto-suave);
+}
+.vacio .icono { font-size: 46px; margin-bottom: 10px; }
+
+/* --- Boton flotante --- */
+.fab {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  right: calc(20px + env(safe-area-inset-right, 0px));
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--azul);
+  color: #fff;
+  font-size: 28px;
+  border: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 30;
+}
+.fab:active { background: var(--azul-oscuro); }
+
+/* --- Formulario --- */
+.campo { margin-bottom: 16px; }
+.campo label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto-suave);
+  margin-bottom: 6px;
+}
+.campo input[type=text],
+.campo input[type=number],
+.campo input[type=date],
+.campo input[type=time],
+.campo textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--gris-borde);
+  border-radius: 10px;
+  font-size: 16px;
+  background: #fff;
+  color: var(--texto);
+  font-family: inherit;
+  min-height: 46px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.campo textarea { resize: vertical; min-height: 70px; }
+.campo .obligatorio { color: var(--rojo); }
+.dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.imagen-picker {
+  border: 2px dashed var(--gris-borde);
+  border-radius: var(--radio);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 10px;
+  text-align: center;
+  color: var(--texto-suave);
+  position: relative;
+  overflow: hidden;
+  min-height: 160px;
+  cursor: pointer;
+}
+.imagen-picker img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.imagen-picker .icono { font-size: 34px; margin-bottom: 6px; }
+.imagen-picker input[type=file] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.botones-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+  position: sticky;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+}
+.btn {
+  flex: 1;
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn:disabled { opacity: 0.6; }
+.btn-primario { background: var(--azul); color: #fff; }
+.btn-primario:active { background: var(--azul-oscuro); }
+.btn-secundario { background: #fff; color: var(--texto); border: 1px solid var(--gris-borde); }
+.btn-peligro { background: #fff; color: var(--rojo); border: 1px solid #fecaca; }
+
+/* --- Detalle --- */
+.detalle-imagen {
+  width: 100%;
+  border-radius: var(--radio);
+  background: #0f172a;
+  display: block;
+  margin-bottom: 16px;
+  max-height: 60vh;
+  object-fit: contain;
+}
+.ficha {
+  background: #fff;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.ficha-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--gris-fondo);
+  font-size: 14px;
+}
+.ficha-fila:last-child { border-bottom: none; }
+.ficha-fila .etiqueta { color: var(--texto-suave); flex: none; }
+.ficha-fila .valor { font-weight: 600; text-align: right; word-break: break-word; }
+.ficha-comentario {
+  background: #fff;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.ficha-comentario .etiqueta {
+  color: var(--texto-suave);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.ficha-comentario .texto { font-size: 14px; white-space: pre-wrap; }
+
+mark {
+  background: #fde68a;
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.toast {
+  position: fixed;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  max-width: calc(100% - 32px);
+  text-align: center;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--texto);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  opacity: 0;
+  transition: all 0.25s ease;
+  pointer-events: none;
+  z-index: 50;
+}
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.imagen-picker.con-imagen .icono,
+.imagen-picker.con-imagen > div:not(.icono) {
+  opacity: 0;
+}
+
+/* --- Visor de imagen a pantalla completa (detalle) --- */
+.detalle-imagen { cursor: zoom-in; }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  touch-action: pinch-zoom;
+}
+.lightbox.visible { display: flex; }
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.lightbox-cerrar {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top, 14px));
+  right: max(14px, env(safe-area-inset-right, 14px));
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 18px;
+  z-index: 101;
+}
+.lightbox-cerrar:active { background: rgba(255, 255, 255, 0.3); }
+
+.enlace-galeria {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--azul);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aviso-error {
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: var(--radio);
+  padding: 18px 16px;
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.aviso-error b { color: var(--rojo); }
+
+</style>
+</head>
+<body>
+
+<header class="app-bar" id="appHeader"></header>
+
+<main id="appMain"></main>
+
+<div id="lightbox" class="lightbox">
+  <button id="btnCerrarLightbox" class="lightbox-cerrar" aria-label="Cerrar">✕</button>
+  <img id="lightboxImg" alt="">
+</div>
+
+<script>
+// ============================================================
+// Registro Piezas Laser — PWA publicada en GitHub Pages (SPA)
+// Misma logica que la version multi-pagina, pero cambiando de
+// pantalla sin recargar: mostrarListado / mostrarForm / mostrarDetalle.
+// ============================================================
+
+// ---------- Utilidades ----------
+function generarId() {
+  return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+}
+function escaparHtml(texto) {
+  const div = document.createElement('div');
+  div.textContent = texto == null ? '' : String(texto);
+  return div.innerHTML;
+}
+// Quita tildes y pasa a minusculas: "Expedición" -> "expedicion"
+function normalizar(texto) {
+  return String(texto == null ? '' : texto).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+const VARIANTES_LETRA = { a: '[aáàäâ]', e: '[eéèëê]', i: '[iíìïî]', o: '[oóòöô]', u: '[uúùüû]', n: '[nñ]', c: '[cç]' };
+function resaltar(texto, terminos) {
+  const seguro = escaparHtml(texto);
+  if (!terminos || terminos.length === 0) return seguro;
+  let resultado = seguro;
+  terminos.forEach((t) => {
+    if (!t) return;
+    // Patron que ignora tildes, para que "expedicion" resalte "Expedición"
+    const patron = Array.from(normalizar(t)).map((c) =>
+      VARIANTES_LETRA[c] || c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
+    const re = new RegExp('(' + patron + ')', 'ig');
+    resultado = resultado.replace(re, '<mark>$1</mark>');
+  });
+  return resultado;
+}
+function formatearFechaCorta(fechaISO) {
+  if (!fechaISO) return '';
+  const [a, m, d] = fechaISO.split('-');
+  return `${d}/${m}/${a}`;
+}
+function formatearFechaHoraLista(fecha, hora) {
+  const partes = fecha === fechaHoyISO() ? 'Hoy' : formatearFechaCorta(fecha);
+  return hora ? `${partes} · ${hora}` : partes;
+}
+function cargarImagen(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Imagen no valida')); };
+    img.src = url;
+  });
+}
+function reducirACanvas(origen, anchoOrigen, altoOrigen, maxLado) {
+  const escala = Math.min(1, maxLado / Math.max(anchoOrigen, altoOrigen));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(anchoOrigen * escala);
+  canvas.height = Math.round(altoOrigen * escala);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(origen, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+// Devuelve { full (1600px), thumb (320px) } en JPEG. La foto original de la
+// camara (12+ Mpx) se decodifica una sola vez y la miniatura sale de la grande.
+async function prepararImagenes(file) {
+  const img = await cargarImagen(file);
+  const grande = reducirACanvas(img, img.naturalWidth, img.naturalHeight, 1600);
+  const mini = reducirACanvas(grande, grande.width, grande.height, 320);
+  const resultado = { full: grande.toDataURL('image/jpeg', 0.85), thumb: mini.toDataURL('image/jpeg', 0.65) };
+  grande.width = grande.height = mini.width = mini.height = 0; // liberar memoria (iOS)
+  return resultado;
+}
+function mostrarToast(mensaje) {
+  let toast = document.querySelector('.toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = mensaje;
+  toast.classList.add('visible');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('visible'), 2200);
+}
+
+function textoError(e) {
+  if (!e) return 'error desconocido';
+  if (e.name === 'QuotaExceededError') return 'no queda espacio de almacenamiento';
+  return e.message || e.name || String(e);
+}
+window.addEventListener('error', (ev) => mostrarToast('Error: ' + textoError(ev.error || ev)));
+window.addEventListener('unhandledrejection', (ev) => mostrarToast('Error: ' + textoError(ev.reason)));
+
+// ---------- Datos (IndexedDB) ----------
+const DB_NAME = 'piezasDB';
+const DB_VERSION = 1;
+const STORE = 'registros';
+
+let promesaDB = null;
+function abrirDB() {
+  if (promesaDB) return promesaDB;
+  promesaDB = new Promise((resolve, reject) => {
+    if (!window.indexedDB) throw new Error('IndexedDB no disponible');
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (ev) => {
+      const db = ev.target.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        const store = db.createObjectStore(STORE, { keyPath: 'id' });
+        store.createIndex('fechaHora', 'fechaHora', { unique: false });
+      }
+    };
+    req.onsuccess = () => {
+      const db = req.result;
+      db.onversionchange = () => { db.close(); promesaDB = null; };
+      resolve(db);
+    };
+    req.onerror = () => reject(req.error);
+    req.onblocked = () => reject(new Error('Base de datos bloqueada: cierra otras pestañas de la app'));
+  });
+  promesaDB.catch(() => { promesaDB = null; });
+  return promesaDB;
+}
+async function conTransaccion(modo, fn) {
+  const db = await abrirDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, modo);
+    const store = tx.objectStore(STORE);
+    let resultado;
+    Promise.resolve(fn(store)).then((r) => { resultado = r; }).catch(reject);
+    tx.oncomplete = () => resolve(resultado);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+function promesa(req) {
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+const PiezasDB = {
+  async guardar(registro) { return conTransaccion('readwrite', (store) => promesa(store.put(registro))); },
+  async obtener(id) { return conTransaccion('readonly', (store) => promesa(store.get(id))); },
+  async eliminar(id) { return conTransaccion('readwrite', (store) => promesa(store.delete(id))); },
+  async listarTodos() { return conTransaccion('readonly', (store) => promesa(store.getAll())); }
+};
+
+// ---------- Router minimo (3 vistas, sin cambiar de URL) ----------
+const elHeader = document.getElementById('appHeader');
+const elMain = document.getElementById('appMain');
+const elLightbox = document.getElementById('lightbox');
+const elLightboxImg = document.getElementById('lightboxImg');
+
+function abrirLightbox(src, alt) {
+  elLightboxImg.src = src;
+  elLightboxImg.alt = alt || '';
+  elLightbox.classList.add('visible');
+  // Entrada en el historial para que el boton "atras" del movil cierre el visor
+  history.pushState(Object.assign({}, history.state, { lightbox: true }), '');
+  if (elLightbox.requestFullscreen) elLightbox.requestFullscreen().catch(() => {});
+  else if (elLightbox.webkitRequestFullscreen) elLightbox.webkitRequestFullscreen();
+}
+function ocultarLightbox() {
+  elLightbox.classList.remove('visible');
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+}
+function cerrarLightbox() {
+  if (!elLightbox.classList.contains('visible')) return;
+  if (history.state && history.state.lightbox) history.back(); // popstate lo oculta
+  else ocultarLightbox();
+}
+document.getElementById('btnCerrarLightbox').addEventListener('click', cerrarLightbox);
+elLightbox.addEventListener('click', (ev) => {
+  if (ev.target.id !== 'btnCerrarLightbox') cerrarLightbox();
+});
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrarLightbox(); });
+function alSalirDePantallaCompleta() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) cerrarLightbox();
+}
+document.addEventListener('fullscreenchange', alSalirDePantallaCompleta);
+document.addEventListener('webkitfullscreenchange', alSalirDePantallaCompleta);
+
+// ---------- Historial: el boton/gesto "atras" del movil vuelve a la vista anterior ----------
+// Sin esto, en una SPA el "atras" de Android cerraria la app entera.
+let claveVistaActual = '';
+let toastPendiente = '';
+function claveDe(estado) { return estado.vista + ':' + (estado.id || ''); }
+async function pintarEstado(estado) {
+  claveVistaActual = claveDe(estado);
+  const toast = toastPendiente;
+  toastPendiente = '';
+  if (estado.vista === 'form') await mostrarForm(estado.id || null);
+  else if (estado.vista === 'detalle') await mostrarDetalle(estado.id);
+  else await mostrarListado();
+  window.scrollTo(0, 0);
+  if (toast) setTimeout(() => mostrarToast(toast), 150);
+}
+function irA(estado, reemplazar) {
+  history[reemplazar ? 'replaceState' : 'pushState'](estado, '');
+  return pintarEstado(estado);
+}
+window.addEventListener('popstate', (ev) => {
+  const estado = ev.state || { vista: 'listado' };
+  if (elLightbox.classList.contains('visible')) ocultarLightbox();
+  if (estado.lightbox) { history.back(); return; } // no reabrir el visor al ir "adelante"
+  if (claveDe(estado) !== claveVistaActual || toastPendiente) pintarEstado(estado);
+});
+
+// ============================================================
+// VISTA: LISTADO
+// ============================================================
+const CAMPOS_ORDEN = {
+  fechaHora: { etiqueta: 'Fecha y hora', tipo: 'texto' },
+  nombrePieza: { etiqueta: 'Nombre de pieza', tipo: 'texto' },
+  cliente: { etiqueta: 'Cliente', tipo: 'texto' },
+  expedicion: { etiqueta: 'Expedición', tipo: 'texto' },
+  cantidad: { etiqueta: 'Cantidad', tipo: 'numero' },
+  operario: { etiqueta: 'Operario', tipo: 'texto' }
+};
+
+const estadoListado = { registros: [], busqueda: '', orden: 'fechaHora', direccion: 'desc' };
+
+try {
+  const guardado = JSON.parse(localStorage.getItem('piezas_prefs_orden') || 'null');
+  if (guardado) {
+    estadoListado.orden = guardado.orden || estadoListado.orden;
+    estadoListado.direccion = guardado.direccion || estadoListado.direccion;
+  }
+} catch (e) { /* ignorar */ }
+
+function guardarPreferenciasOrden() {
+  try {
+    localStorage.setItem('piezas_prefs_orden', JSON.stringify({ orden: estadoListado.orden, direccion: estadoListado.direccion }));
+  } catch (e) { /* sin localStorage: el orden simplemente no se recuerda */ }
+}
+function textoBuscable(r) {
+  return [r.nombrePieza, r.cliente, r.expedicion, r.cantidad, formatearFechaCorta(r.fecha), r.hora, r.operario, r.comentario]
+    .filter(Boolean).map(normalizar).join(' ');
+}
+function filtrarYOrdenarListado() {
+  const terminos = normalizar(estadoListado.busqueda.trim()).split(/\s+/).filter(Boolean);
+  let lista = estadoListado.registros;
+  if (terminos.length) {
+    lista = lista.filter((r) => terminos.every((t) => textoBuscable(r).includes(t)));
+  }
+  const campo = estadoListado.orden;
+  const info = CAMPOS_ORDEN[campo];
+  lista = [...lista].sort((a, b) => {
+    let va = a[campo], vb = b[campo];
+    if (info.tipo === 'numero') { va = Number(va) || 0; vb = Number(vb) || 0; }
+    else { va = (va || '').toString().toLowerCase(); vb = (vb || '').toString().toLowerCase(); }
+    if (va < vb) return estadoListado.direccion === 'asc' ? -1 : 1;
+    if (va > vb) return estadoListado.direccion === 'asc' ? 1 : -1;
+    return 0;
+  });
+  return lista;
+}
+
+async function mostrarListado() {
+  elHeader.innerHTML = `<h1>📦 Registro Piezas Laser</h1>`;
+  elMain.innerHTML = `
+    <div class="barra-busqueda">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input id="inputBuscar" type="text" placeholder="Buscar por pieza, cliente, expedición, comentario..." autocomplete="off">
+      <button id="btnLimpiarBusqueda" class="limpiar">✕</button>
+    </div>
+    <div class="fila-orden">
+      <select id="selectOrden">
+        <option value="fechaHora">Ordenar por fecha</option>
+        <option value="nombrePieza">Nombre de pieza</option>
+        <option value="cliente">Cliente</option>
+        <option value="expedicion">Expedición</option>
+        <option value="cantidad">Cantidad</option>
+        <option value="operario">Operario</option>
+      </select>
+      <button id="btnDireccion"></button>
+    </div>
+    <div id="contadorResultados" class="contador-resultados"></div>
+    <div id="listaRegistros" class="lista-registros"></div>
+    <button id="btnNuevo" class="fab" aria-label="Nuevo registro">+</button>
+  `;
+
+  const elBuscador = document.getElementById('inputBuscar');
+  const elLimpiar = document.getElementById('btnLimpiarBusqueda');
+  const elOrden = document.getElementById('selectOrden');
+  const elDireccion = document.getElementById('btnDireccion');
+  const elContador = document.getElementById('contadorResultados');
+  const elLista = document.getElementById('listaRegistros');
+
+  elOrden.value = estadoListado.orden;
+  elBuscador.value = estadoListado.busqueda;
+  elLimpiar.style.display = estadoListado.busqueda ? 'block' : 'none';
+
+  function actualizarIconoDireccion() {
+    elDireccion.innerHTML = estadoListado.direccion === 'asc' ? '⬆ Ascendente' : '⬇ Descendente';
+  }
+  actualizarIconoDireccion();
+
+  function render() {
+    const lista = filtrarYOrdenarListado();
+    const terminos = estadoListado.busqueda.trim().split(/\s+/).filter(Boolean);
+
+    elContador.textContent = estadoListado.registros.length === 0 ? '' :
+      `${lista.length} de ${estadoListado.registros.length} registro${estadoListado.registros.length === 1 ? '' : 's'}`;
+
+    if (estadoListado.registros.length === 0) {
+      elLista.innerHTML = `<div class="vacio"><div class="icono">📦</div><p>Todavía no hay registros.<br>Pulsa el botón + para añadir el primero.</p></div>`;
+      return;
+    }
+    if (lista.length === 0) {
+      elLista.innerHTML = `<div class="vacio"><div class="icono">🔍</div><p>Sin resultados para esa búsqueda.</p></div>`;
+      return;
+    }
+
+    elLista.innerHTML = lista.map((r) => {
+      const comentario = r.comentario ? resaltar(r.comentario, terminos) : '';
+      return `
+        <a class="tarjeta" data-id="${escaparHtml(r.id)}">
+          <img class="miniatura" src="${r.imagenThumb || ''}" alt="">
+          <div class="info">
+            <div class="fila-top">
+              <span class="nombre-pieza">${resaltar(r.nombrePieza || '(sin nombre)', terminos)}</span>
+              <span class="fecha-hora">${formatearFechaHoraLista(r.fecha, r.hora)}</span>
+            </div>
+            <div class="fila-meta">
+              <b>${resaltar(r.cliente || '-', terminos)}</b> · Exp. ${resaltar(r.expedicion || '-', terminos)} · Cant. ${resaltar(r.cantidad ?? '-', terminos)}
+            </div>
+            <div class="fila-extra">
+              ${r.operario ? `<span class="badge">Operario: ${resaltar(r.operario, terminos)}</span>` : ''}
+              ${comentario ? `<span class="comentario-preview">💬 ${comentario}</span>` : ''}
+            </div>
+          </div>
+        </a>`;
+    }).join('');
+
+    elLista.querySelectorAll('.tarjeta').forEach((el) => {
+      el.addEventListener('click', () => irA({ vista: 'detalle', id: el.dataset.id }));
+    });
+  }
+
+  elBuscador.addEventListener('input', () => {
+    estadoListado.busqueda = elBuscador.value;
+    elLimpiar.style.display = estadoListado.busqueda ? 'block' : 'none';
+    render();
+  });
+  elLimpiar.addEventListener('click', () => {
+    elBuscador.value = '';
+    estadoListado.busqueda = '';
+    elLimpiar.style.display = 'none';
+    render();
+    elBuscador.focus();
+  });
+  elOrden.addEventListener('change', () => {
+    estadoListado.orden = elOrden.value;
+    guardarPreferenciasOrden();
+    render();
+  });
+  elDireccion.addEventListener('click', () => {
+    estadoListado.direccion = estadoListado.direccion === 'asc' ? 'desc' : 'asc';
+    actualizarIconoDireccion();
+    guardarPreferenciasOrden();
+    render();
+  });
+  document.getElementById('btnNuevo').addEventListener('click', () => irA({ vista: 'form' }));
+
+  estadoListado.registros = await PiezasDB.listarTodos();
+  render();
+}
+
+// ============================================================
+// VISTA: FORMULARIO (alta / edicion)
+// ============================================================
+function fechaHoyISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function horaAhora() {
+  const d = new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+async function mostrarForm(idEdicion) {
+  elHeader.innerHTML = `
+    <button type="button" class="volver" id="btnVolverForm" aria-label="Volver">←</button>
+    <h1 id="tituloForm">${idEdicion ? 'Editar registro' : 'Nuevo registro'}</h1>
+  `;
+  elMain.innerHTML = `
+    <form id="formRegistro">
+      <div class="campo">
+        <label>Foto de la pieza <span class="obligatorio">*</span></label>
+        <div id="imagenPicker" class="imagen-picker">
+          <img id="previewImagen" style="display:none">
+          <div class="icono">📷</div>
+          <div id="textoPicker">Toca para hacer una foto</div>
+          <input id="inputImagen" type="file" accept="image/*" capture="environment">
+        </div>
+        <button type="button" id="btnGaleria" class="enlace-galeria">🖼️ o elegir una foto de la galería</button>
+        <input id="inputGaleria" type="file" accept="image/*" hidden>
+      </div>
+      <div class="campo">
+        <label>Nombre de la pieza <span class="obligatorio">*</span></label>
+        <input id="nombrePieza" type="text" placeholder="Ej. Brida DN50" required>
+      </div>
+      <div class="campo">
+        <label>Cliente <span class="obligatorio">*</span></label>
+        <input id="cliente" type="text" placeholder="Ej. Talleres Gallego" required>
+      </div>
+      <div class="dos-columnas">
+        <div class="campo"><label>Expedición</label><input id="expedicion" type="text" placeholder="Ej. EXP-2026-014"></div>
+        <div class="campo"><label>Cantidad</label><input id="cantidad" type="number" min="0" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="dos-columnas">
+        <div class="campo"><label>Fecha</label><input id="fecha" type="date"></div>
+        <div class="campo"><label>Hora</label><input id="hora" type="time"></div>
+      </div>
+      <div class="campo"><label>Operario</label><input id="operario" type="text" placeholder="Nombre del operario"></div>
+      <div class="campo"><label>Comentario libre</label><textarea id="comentario" placeholder="Cualquier detalle adicional..."></textarea></div>
+      <div class="botones-form">
+        <button type="button" id="btnCancelar" class="btn btn-secundario">Cancelar</button>
+        <button type="submit" class="btn btn-primario">Guardar</button>
+      </div>
+    </form>
+  `;
+
+  const elImagenInput = document.getElementById('inputImagen');
+  const elImagenPicker = document.getElementById('imagenPicker');
+  const elPreview = document.getElementById('previewImagen');
+  const elNombrePieza = document.getElementById('nombrePieza');
+  const elCliente = document.getElementById('cliente');
+  const elExpedicion = document.getElementById('expedicion');
+  const elCantidad = document.getElementById('cantidad');
+  const elFecha = document.getElementById('fecha');
+  const elHora = document.getElementById('hora');
+  const elOperario = document.getElementById('operario');
+  const elComentario = document.getElementById('comentario');
+
+  let imagenThumbActual = '';
+  let imagenFullActual = '';
+  let registroExistente = null;
+
+  if (idEdicion) {
+    registroExistente = await PiezasDB.obtener(idEdicion);
+    if (registroExistente) {
+      elNombrePieza.value = registroExistente.nombrePieza || '';
+      elCliente.value = registroExistente.cliente || '';
+      elExpedicion.value = registroExistente.expedicion || '';
+      elCantidad.value = registroExistente.cantidad ?? '';
+      elFecha.value = registroExistente.fecha || fechaHoyISO();
+      elHora.value = registroExistente.hora || horaAhora();
+      elOperario.value = registroExistente.operario || '';
+      elComentario.value = registroExistente.comentario || '';
+      imagenThumbActual = registroExistente.imagenThumb || '';
+      imagenFullActual = registroExistente.imagenFull || '';
+      if (imagenFullActual) mostrarPreview(imagenFullActual);
+    }
+  } else {
+    elFecha.value = fechaHoyISO();
+    elHora.value = horaAhora();
+  }
+
+  function mostrarPreview(src) {
+    elPreview.src = src;
+    elPreview.style.display = 'block';
+    elImagenPicker.classList.add('con-imagen');
+  }
+
+  // Dos entradas: la del recuadro abre la camara directamente (capture) y la
+  // del enlace abre la galeria (con capture el movil no ofrece la galeria).
+  const elGaleriaInput = document.getElementById('inputGaleria');
+  const elTextoPicker = document.getElementById('textoPicker');
+  let procesandoFoto = false;
+  async function alElegirFoto(input) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    procesandoFoto = true;
+    elTextoPicker.textContent = 'Procesando foto…';
+    try {
+      const { thumb, full } = await prepararImagenes(file);
+      imagenThumbActual = thumb;
+      imagenFullActual = full;
+      mostrarPreview(full);
+    } catch (e) {
+      mostrarToast('No se pudo cargar la imagen');
+    } finally {
+      procesandoFoto = false;
+      elTextoPicker.textContent = 'Toca para hacer una foto';
+      input.value = ''; // permite volver a elegir el mismo archivo
+    }
+  }
+  elImagenInput.addEventListener('change', () => alElegirFoto(elImagenInput));
+  elGaleriaInput.addEventListener('change', () => alElegirFoto(elGaleriaInput));
+  document.getElementById('btnGaleria').addEventListener('click', () => elGaleriaInput.click());
+
+  const elBtnGuardar = document.querySelector('#formRegistro button[type=submit]');
+  let guardando = false;
+  document.getElementById('formRegistro').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (guardando) return;
+    if (procesandoFoto) { mostrarToast('Espera, procesando la foto…'); return; }
+    if (!imagenFullActual) { mostrarToast('Añade una foto de la pieza'); elImagenInput.focus(); return; }
+    if (!elNombrePieza.value.trim()) { mostrarToast('Falta el nombre de la pieza'); elNombrePieza.focus(); return; }
+    if (!elCliente.value.trim()) { mostrarToast('Falta el cliente'); elCliente.focus(); return; }
+
+    const fecha = elFecha.value || fechaHoyISO();
+    const hora = elHora.value || horaAhora();
+    const registro = {
+      id: registroExistente ? registroExistente.id : generarId(),
+      nombrePieza: elNombrePieza.value.trim(),
+      cliente: elCliente.value.trim(),
+      expedicion: elExpedicion.value.trim(),
+      cantidad: elCantidad.value === '' ? null : Number(elCantidad.value),
+      fecha, hora,
+      fechaHora: fecha + 'T' + hora,
+      operario: elOperario.value.trim(),
+      comentario: elComentario.value.trim(),
+      imagenThumb: imagenThumbActual,
+      imagenFull: imagenFullActual,
+      creado: registroExistente ? registroExistente.creado : Date.now(),
+      actualizado: Date.now()
+    };
+    guardando = true;
+    elBtnGuardar.disabled = true;
+    elBtnGuardar.textContent = 'Guardando…';
+    try {
+      await PiezasDB.guardar(registro);
+    } catch (e) {
+      guardando = false;
+      elBtnGuardar.disabled = false;
+      elBtnGuardar.textContent = 'Guardar';
+      mostrarToast('No se pudo guardar: ' + textoError(e));
+      return;
+    }
+    toastPendiente = 'Registro guardado';
+    if (registroExistente) history.back(); // vuelve al detalle (que se repinta con los cambios)
+    else irA({ vista: 'detalle', id: registro.id }, true); // el formulario se sustituye por el detalle
+  });
+
+  document.getElementById('btnCancelar').addEventListener('click', () => history.back());
+  document.getElementById('btnVolverForm').addEventListener('click', () => history.back());
+}
+
+// ============================================================
+// VISTA: DETALLE
+// ============================================================
+function filaDetalle(etiqueta, valor) {
+  if (valor === null || valor === undefined || valor === '') return '';
+  return `<div class="ficha-fila"><span class="etiqueta">${etiqueta}</span><span class="valor">${escaparHtml(valor)}</span></div>`;
+}
+
+async function mostrarDetalle(id) {
+  elHeader.innerHTML = `<button type="button" class="volver" id="btnVolverDetalle" aria-label="Volver">←</button><h1>Detalle del registro</h1>`;
+  elMain.innerHTML = `
+    <div id="contenidoDetalle"></div>
+    <div class="botones-form">
+      <a id="btnEditar" class="btn btn-secundario">✏️ Editar</a>
+      <button id="btnEliminar" class="btn btn-peligro" type="button">🗑️ Eliminar</button>
+    </div>
+  `;
+  document.getElementById('btnVolverDetalle').addEventListener('click', () => history.back());
+
+  const elContenido = document.getElementById('contenidoDetalle');
+  const r = await PiezasDB.obtener(id);
+  if (!r) {
+    elContenido.innerHTML = '<div class="vacio"><div class="icono">⚠️</div><p>Este registro ya no existe.</p></div>';
+    document.getElementById('btnEditar').style.display = 'none';
+    document.getElementById('btnEliminar').style.display = 'none';
+    return;
+  }
+
+  elContenido.innerHTML = `
+    <img class="detalle-imagen" src="${r.imagenFull}" alt="${escaparHtml(r.nombrePieza)}">
+    <div class="ficha">
+      ${filaDetalle('Nombre de pieza', r.nombrePieza)}
+      ${filaDetalle('Cliente', r.cliente)}
+      ${filaDetalle('Expedición', r.expedicion)}
+      ${filaDetalle('Cantidad', r.cantidad)}
+      ${filaDetalle('Fecha', formatearFechaCorta(r.fecha))}
+      ${filaDetalle('Hora', r.hora)}
+      ${filaDetalle('Operario', r.operario)}
+    </div>
+    ${r.comentario ? `<div class="ficha-comentario"><div class="etiqueta">Comentario</div><div class="texto">${escaparHtml(r.comentario)}</div></div>` : ''}
+  `;
+
+  document.getElementById('btnEditar').addEventListener('click', () => irA({ vista: 'form', id: r.id }));
+  document.getElementById('btnEliminar').addEventListener('click', async () => {
+    if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
+    await PiezasDB.eliminar(r.id);
+    toastPendiente = 'Registro eliminado';
+    history.back();
+  });
+
+  const elImagenDetalle = elContenido.querySelector('.detalle-imagen');
+  if (elImagenDetalle) elImagenDetalle.addEventListener('click', () => abrirLightbox(r.imagenFull, r.nombrePieza));
+}
+
+// ---------- Service worker: funciona sin conexion e instalable como app ----------
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+// ---------- Arranque ----------
+function mostrarErrorAlmacenamiento(e) {
+  elHeader.innerHTML = `<h1>📦 Registro Piezas Laser</h1>`;
+  elMain.innerHTML = `
+    <div class="aviso-error">
+      <p><b>Este navegador no deja guardar datos.</b></p>
+      <p>Abre la app con Chrome (Android) o Safari (iPhone) y no en modo incógnito /
+      navegación privada.</p>
+      <p style="color:var(--texto-suave);font-size:12px">Detalle tecnico: ${escaparHtml(textoError(e))}</p>
+    </div>`;
+}
+(async function arrancar() {
+  try {
+    await abrirDB();
+  } catch (e) {
+    mostrarErrorAlmacenamiento(e);
+    return;
+  }
+  // Pide al navegador que no borre los datos si el movil va justo de espacio
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  irA({ vista: 'listado' }, true);
+})();
+
+</script>
+</body>
+</html>
