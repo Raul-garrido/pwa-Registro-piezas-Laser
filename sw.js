@@ -2,7 +2,7 @@
 // Guarda la app en cache para que abra sin conexion. Primero intenta la red
 // (asi las actualizaciones llegan solas) y si no hay conexion usa la cache.
 // Al cambiar archivos de la app, sube el numero de version.
-const CACHE = 'registro-piezas-v3';
+const CACHE = 'registro-piezas-v4';
 const ARCHIVOS = [
   './',
   './index.html',

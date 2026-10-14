@@ -474,6 +474,27 @@ main {
   opacity: 0.7;
 }
 .detalle-miniaturas img.activa { border-color: var(--azul); opacity: 1; }
+.fila-fotos-detalle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.fila-fotos-detalle .detalle-miniaturas { margin-bottom: 0; }
+.btn-quitar-foto {
+  flex: none;
+  min-height: 40px;
+  padding: 0 12px;
+  margin-left: auto;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: var(--rojo);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
 .ficha {
   background: #fff;
   border-radius: var(--radio);
@@ -1359,8 +1380,11 @@ async function mostrarDetalle(id) {
   let fotoActual = 0;
   elContenido.innerHTML = `
     <img class="detalle-imagen" src="${fotos.length ? fotos[0].full : ''}" alt="${escaparHtml(r.nombrePieza)}">
-    ${fotos.length > 1 ? `<div class="detalle-miniaturas">${fotos.map((f, i) =>
-      `<img src="${f.thumb}" data-indice="${i}" class="${i === 0 ? 'activa' : ''}" alt="Foto ${i + 1}">`).join('')}</div>` : '<div style="height:6px"></div>'}
+    <div class="fila-fotos-detalle">
+      ${fotos.length > 1 ? `<div class="detalle-miniaturas">${fotos.map((f, i) =>
+        `<img src="${f.thumb}" data-indice="${i}" class="${i === 0 ? 'activa' : ''}" alt="Foto ${i + 1}">`).join('')}</div>` : ''}
+      ${fotos.length ? '<button type="button" id="btnQuitarFoto" class="btn-quitar-foto">🗑️ Eliminar foto</button>' : ''}
+    </div>
     <div class="ficha">
       ${filaDetalle('Nombre de pieza', r.nombrePieza)}
       ${filaDetalle('Cliente', r.cliente)}
@@ -1391,6 +1415,34 @@ async function mostrarDetalle(id) {
       elImagenDetalle.src = fotos[fotoActual].full;
       elContenido.querySelectorAll('.detalle-miniaturas img').forEach((m) => m.classList.toggle('activa', m === el));
     });
+  });
+
+  // Eliminar la foto que se esta viendo (p. ej. si se subio una por error)
+  const elQuitarFoto = document.getElementById('btnQuitarFoto');
+  if (elQuitarFoto) elQuitarFoto.addEventListener('click', async () => {
+    if (fotos.length <= 1) {
+      mostrarToast('El registro necesita al menos una foto. Añade otra desde Editar y luego elimina esta.');
+      return;
+    }
+    const texto = `¿Eliminar la foto ${fotoActual + 1} de ${fotos.length}?` +
+      (fotoActual === 0 ? ' Es la principal: la siguiente pasará a ser la principal.' : '') +
+      ' Esta acción no se puede deshacer.';
+    if (!confirm(texto)) return;
+    const restantes = fotos.filter((_, i) => i !== fotoActual);
+    const actualizado = Object.assign({}, r, {
+      imagenThumb: restantes[0].thumb,
+      imagenFull: restantes[0].full,
+      fotosExtra: restantes.slice(1, MAX_FOTOS),
+      actualizado: Date.now()
+    });
+    try {
+      await PiezasDB.guardar(actualizado);
+    } catch (e) {
+      mostrarToast('No se pudo eliminar la foto: ' + textoError(e));
+      return;
+    }
+    await mostrarDetalle(r.id);
+    mostrarToast('Foto eliminada');
   });
 }
 
