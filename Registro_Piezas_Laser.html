@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <title>Registro Piezas Laser</title>
 
@@ -41,7 +41,7 @@ html, body {
 }
 
 body {
-  padding-bottom: 90px;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
   min-height: 100vh;
 }
 
@@ -54,6 +54,9 @@ header.app-bar {
   background: var(--azul);
   color: #fff;
   padding: 14px 16px;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
   display: flex;
   align-items: center;
   gap: 10px;
@@ -63,9 +66,17 @@ header.app-bar {
 header.app-bar .volver {
   font-size: 22px;
   line-height: 1;
-  padding: 4px 8px;
-  margin-left: -8px;
-  border-radius: 8px;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -10px 0 -10px -12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  border-radius: 10px;
+  cursor: pointer;
 }
 header.app-bar .volver:active { background: rgba(255,255,255,0.15); }
 
@@ -99,7 +110,8 @@ main {
   border: none;
   outline: none;
   flex: 1;
-  font-size: 15px;
+  min-width: 0;
+  font-size: 16px;
   background: transparent;
 }
 .barra-busqueda .limpiar {
@@ -107,10 +119,12 @@ main {
   border: none;
   background: var(--gris-borde);
   color: var(--texto-suave);
-  width: 22px;
-  height: 22px;
+  width: 30px;
+  height: 30px;
+  margin: -4px -8px -4px 0;
   border-radius: 50%;
-  font-size: 13px;
+  font-size: 14px;
+  flex: none;
   cursor: pointer;
 }
 
@@ -122,19 +136,23 @@ main {
 }
 .fila-orden select {
   flex: 1;
+  min-width: 0;
+  min-height: 44px;
   padding: 9px 10px;
   border-radius: 10px;
   border: 1px solid var(--gris-borde);
   background: #fff;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--texto);
 }
 .fila-orden button#btnDireccion {
   border: 1px solid var(--gris-borde);
   background: #fff;
   border-radius: 10px;
+  min-height: 44px;
   padding: 9px 12px;
   font-size: 14px;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -248,8 +266,8 @@ main {
 /* --- Boton flotante --- */
 .fab {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  right: calc(20px + env(safe-area-inset-right, 0px));
   width: 58px;
   height: 58px;
   border-radius: 50%;
@@ -284,10 +302,13 @@ main {
   padding: 11px 12px;
   border: 1px solid var(--gris-borde);
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 16px;
   background: #fff;
   color: var(--texto);
   font-family: inherit;
+  min-height: 46px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 .campo textarea { resize: vertical; min-height: 70px; }
 .campo .obligatorio { color: var(--rojo); }
@@ -333,7 +354,7 @@ main {
   gap: 10px;
   margin-top: 22px;
   position: sticky;
-  bottom: 10px;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
 }
 .btn {
   flex: 1;
@@ -344,7 +365,12 @@ main {
   font-weight: 600;
   cursor: pointer;
   text-align: center;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+.btn:disabled { opacity: 0.6; }
 .btn-primario { background: var(--azul); color: #fff; }
 .btn-primario:active { background: var(--azul-oscuro); }
 .btn-secundario { background: #fff; color: var(--texto); border: 1px solid var(--gris-borde); }
@@ -402,7 +428,9 @@ mark {
 
 .toast {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  max-width: calc(100% - 32px);
+  text-align: center;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: var(--texto);
@@ -447,9 +475,9 @@ mark {
 .lightbox-cerrar {
   position: absolute;
   top: max(14px, env(safe-area-inset-top, 14px));
-  right: 14px;
-  width: 40px;
-  height: 40px;
+  right: max(14px, env(safe-area-inset-right, 14px));
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: none;
   background: rgba(255, 255, 255, 0.15);
@@ -458,6 +486,30 @@ mark {
   z-index: 101;
 }
 .lightbox-cerrar:active { background: rgba(255, 255, 255, 0.3); }
+
+.enlace-galeria {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--azul);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aviso-error {
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: var(--radio);
+  padding: 18px 16px;
+  color: var(--texto);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.aviso-error b { color: var(--rojo); }
 
 </style>
 </head>
@@ -488,13 +540,21 @@ function escaparHtml(texto) {
   div.textContent = texto == null ? '' : String(texto);
   return div.innerHTML;
 }
+// Quita tildes y pasa a minusculas: "Expedición" -> "expedicion"
+function normalizar(texto) {
+  return String(texto == null ? '' : texto).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+const VARIANTES_LETRA = { a: '[aáàäâ]', e: '[eéèëê]', i: '[iíìïî]', o: '[oóòöô]', u: '[uúùüû]', n: '[nñ]', c: '[cç]' };
 function resaltar(texto, terminos) {
   const seguro = escaparHtml(texto);
   if (!terminos || terminos.length === 0) return seguro;
   let resultado = seguro;
   terminos.forEach((t) => {
     if (!t) return;
-    const re = new RegExp('(' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig');
+    // Patron que ignora tildes, para que "expedicion" resalte "Expedición"
+    const patron = Array.from(normalizar(t)).map((c) =>
+      VARIANTES_LETRA[c] || c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
+    const re = new RegExp('(' + patron + ')', 'ig');
     resultado = resultado.replace(re, '<mark>$1</mark>');
   });
   return resultado;
@@ -505,36 +565,37 @@ function formatearFechaCorta(fechaISO) {
   return `${d}/${m}/${a}`;
 }
 function formatearFechaHoraLista(fecha, hora) {
-  const hoy = new Date();
-  const hoyStr = hoy.toISOString().slice(0, 10);
-  const partes = fecha === hoyStr ? 'Hoy' : formatearFechaCorta(fecha);
+  const partes = fecha === fechaHoyISO() ? 'Hoy' : formatearFechaCorta(fecha);
   return hora ? `${partes} · ${hora}` : partes;
 }
-function redimensionarImagen(file, maxLado, calidad) {
+function cargarImagen(file) {
   return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
     const img = new Image();
-    const lector = new FileReader();
-    lector.onload = () => { img.src = lector.result; };
-    lector.onerror = reject;
-    img.onload = () => {
-      let { width, height } = img;
-      if (width > height && width > maxLado) {
-        height = Math.round(height * (maxLado / width));
-        width = maxLado;
-      } else if (height >= width && height > maxLado) {
-        width = Math.round(width * (maxLado / height));
-        height = maxLado;
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', calidad));
-    };
-    img.onerror = reject;
-    lector.readAsDataURL(file);
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Imagen no valida')); };
+    img.src = url;
   });
+}
+function reducirACanvas(origen, anchoOrigen, altoOrigen, maxLado) {
+  const escala = Math.min(1, maxLado / Math.max(anchoOrigen, altoOrigen));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(anchoOrigen * escala);
+  canvas.height = Math.round(altoOrigen * escala);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(origen, 0, 0, canvas.width, canvas.height);
+  return canvas;
+}
+// Devuelve { full (1600px), thumb (320px) } en JPEG. La foto original de la
+// camara (12+ Mpx) se decodifica una sola vez y la miniatura sale de la grande.
+async function prepararImagenes(file) {
+  const img = await cargarImagen(file);
+  const grande = reducirACanvas(img, img.naturalWidth, img.naturalHeight, 1600);
+  const mini = reducirACanvas(grande, grande.width, grande.height, 320);
+  const resultado = { full: grande.toDataURL('image/jpeg', 0.85), thumb: mini.toDataURL('image/jpeg', 0.65) };
+  grande.width = grande.height = mini.width = mini.height = 0; // liberar memoria (iOS)
+  return resultado;
 }
 function mostrarToast(mensaje) {
   let toast = document.querySelector('.toast');
@@ -549,13 +610,24 @@ function mostrarToast(mensaje) {
   toast._timer = setTimeout(() => toast.classList.remove('visible'), 2200);
 }
 
+function textoError(e) {
+  if (!e) return 'error desconocido';
+  if (e.name === 'QuotaExceededError') return 'no queda espacio de almacenamiento';
+  return e.message || e.name || String(e);
+}
+window.addEventListener('error', (ev) => mostrarToast('Error: ' + textoError(ev.error || ev)));
+window.addEventListener('unhandledrejection', (ev) => mostrarToast('Error: ' + textoError(ev.reason)));
+
 // ---------- Datos (IndexedDB) ----------
 const DB_NAME = 'piezasDB';
 const DB_VERSION = 1;
 const STORE = 'registros';
 
+let promesaDB = null;
 function abrirDB() {
-  return new Promise((resolve, reject) => {
+  if (promesaDB) return promesaDB;
+  promesaDB = new Promise((resolve, reject) => {
+    if (!window.indexedDB) throw new Error('IndexedDB no disponible');
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = (ev) => {
       const db = ev.target.result;
@@ -564,9 +636,16 @@ function abrirDB() {
         store.createIndex('fechaHora', 'fechaHora', { unique: false });
       }
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      const db = req.result;
+      db.onversionchange = () => { db.close(); promesaDB = null; };
+      resolve(db);
+    };
     req.onerror = () => reject(req.error);
+    req.onblocked = () => reject(new Error('Base de datos bloqueada: cierra otras pestañas de la app'));
   });
+  promesaDB.catch(() => { promesaDB = null; });
+  return promesaDB;
 }
 async function conTransaccion(modo, fn) {
   const db = await abrirDB();
@@ -602,21 +681,56 @@ function abrirLightbox(src, alt) {
   elLightboxImg.src = src;
   elLightboxImg.alt = alt || '';
   elLightbox.classList.add('visible');
+  // Entrada en el historial para que el boton "atras" del movil cierre el visor
+  history.pushState(Object.assign({}, history.state, { lightbox: true }), '');
   if (elLightbox.requestFullscreen) elLightbox.requestFullscreen().catch(() => {});
   else if (elLightbox.webkitRequestFullscreen) elLightbox.webkitRequestFullscreen();
 }
-function cerrarLightbox() {
+function ocultarLightbox() {
   elLightbox.classList.remove('visible');
   if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
   else if (document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+}
+function cerrarLightbox() {
+  if (!elLightbox.classList.contains('visible')) return;
+  if (history.state && history.state.lightbox) history.back(); // popstate lo oculta
+  else ocultarLightbox();
 }
 document.getElementById('btnCerrarLightbox').addEventListener('click', cerrarLightbox);
 elLightbox.addEventListener('click', (ev) => {
   if (ev.target.id !== 'btnCerrarLightbox') cerrarLightbox();
 });
 document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrarLightbox(); });
-document.addEventListener('fullscreenchange', () => {
-  if (!document.fullscreenElement) elLightbox.classList.remove('visible');
+function alSalirDePantallaCompleta() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) cerrarLightbox();
+}
+document.addEventListener('fullscreenchange', alSalirDePantallaCompleta);
+document.addEventListener('webkitfullscreenchange', alSalirDePantallaCompleta);
+
+// ---------- Historial: el boton/gesto "atras" del movil vuelve a la vista anterior ----------
+// Sin esto, en una SPA el "atras" de Android cerraria la app entera.
+let claveVistaActual = '';
+let toastPendiente = '';
+function claveDe(estado) { return estado.vista + ':' + (estado.id || ''); }
+async function pintarEstado(estado) {
+  claveVistaActual = claveDe(estado);
+  const toast = toastPendiente;
+  toastPendiente = '';
+  if (estado.vista === 'form') await mostrarForm(estado.id || null);
+  else if (estado.vista === 'detalle') await mostrarDetalle(estado.id);
+  else await mostrarListado();
+  window.scrollTo(0, 0);
+  if (toast) setTimeout(() => mostrarToast(toast), 150);
+}
+function irA(estado, reemplazar) {
+  history[reemplazar ? 'replaceState' : 'pushState'](estado, '');
+  return pintarEstado(estado);
+}
+window.addEventListener('popstate', (ev) => {
+  const estado = ev.state || { vista: 'listado' };
+  if (elLightbox.classList.contains('visible')) ocultarLightbox();
+  if (estado.lightbox) { history.back(); return; } // no reabrir el visor al ir "adelante"
+  if (claveDe(estado) !== claveVistaActual || toastPendiente) pintarEstado(estado);
 });
 
 // ============================================================
@@ -626,7 +740,7 @@ const CAMPOS_ORDEN = {
   fechaHora: { etiqueta: 'Fecha y hora', tipo: 'texto' },
   nombrePieza: { etiqueta: 'Nombre de pieza', tipo: 'texto' },
   cliente: { etiqueta: 'Cliente', tipo: 'texto' },
-  expedicion: { etiqueta: 'Expedicion', tipo: 'texto' },
+  expedicion: { etiqueta: 'Expedición', tipo: 'texto' },
   cantidad: { etiqueta: 'Cantidad', tipo: 'numero' },
   operario: { etiqueta: 'Operario', tipo: 'texto' }
 };
@@ -642,14 +756,16 @@ try {
 } catch (e) { /* ignorar */ }
 
 function guardarPreferenciasOrden() {
-  localStorage.setItem('piezas_prefs_orden', JSON.stringify({ orden: estadoListado.orden, direccion: estadoListado.direccion }));
+  try {
+    localStorage.setItem('piezas_prefs_orden', JSON.stringify({ orden: estadoListado.orden, direccion: estadoListado.direccion }));
+  } catch (e) { /* sin localStorage: el orden simplemente no se recuerda */ }
 }
 function textoBuscable(r) {
   return [r.nombrePieza, r.cliente, r.expedicion, r.cantidad, formatearFechaCorta(r.fecha), r.hora, r.operario, r.comentario]
-    .filter(Boolean).join(' ').toLowerCase();
+    .filter(Boolean).map(normalizar).join(' ');
 }
 function filtrarYOrdenarListado() {
-  const terminos = estadoListado.busqueda.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const terminos = normalizar(estadoListado.busqueda.trim()).split(/\s+/).filter(Boolean);
   let lista = estadoListado.registros;
   if (terminos.length) {
     lista = lista.filter((r) => terminos.every((t) => textoBuscable(r).includes(t)));
@@ -674,7 +790,7 @@ async function mostrarListado() {
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
       </svg>
-      <input id="inputBuscar" type="text" placeholder="Buscar por pieza, cliente, expedicion, comentario..." autocomplete="off">
+      <input id="inputBuscar" type="text" placeholder="Buscar por pieza, cliente, expedición, comentario..." autocomplete="off">
       <button id="btnLimpiarBusqueda" class="limpiar">✕</button>
     </div>
     <div class="fila-orden">
@@ -682,7 +798,7 @@ async function mostrarListado() {
         <option value="fechaHora">Ordenar por fecha</option>
         <option value="nombrePieza">Nombre de pieza</option>
         <option value="cliente">Cliente</option>
-        <option value="expedicion">Expedicion</option>
+        <option value="expedicion">Expedición</option>
         <option value="cantidad">Cantidad</option>
         <option value="operario">Operario</option>
       </select>
@@ -717,11 +833,11 @@ async function mostrarListado() {
       `${lista.length} de ${estadoListado.registros.length} registro${estadoListado.registros.length === 1 ? '' : 's'}`;
 
     if (estadoListado.registros.length === 0) {
-      elLista.innerHTML = `<div class="vacio"><div class="icono">📦</div><p>Todavia no hay registros.<br>Pulsa el boton + para anadir el primero.</p></div>`;
+      elLista.innerHTML = `<div class="vacio"><div class="icono">📦</div><p>Todavía no hay registros.<br>Pulsa el botón + para añadir el primero.</p></div>`;
       return;
     }
     if (lista.length === 0) {
-      elLista.innerHTML = `<div class="vacio"><div class="icono">🔍</div><p>Sin resultados para esa busqueda.</p></div>`;
+      elLista.innerHTML = `<div class="vacio"><div class="icono">🔍</div><p>Sin resultados para esa búsqueda.</p></div>`;
       return;
     }
 
@@ -747,7 +863,7 @@ async function mostrarListado() {
     }).join('');
 
     elLista.querySelectorAll('.tarjeta').forEach((el) => {
-      el.addEventListener('click', () => mostrarDetalle(el.dataset.id));
+      el.addEventListener('click', () => irA({ vista: 'detalle', id: el.dataset.id }));
     });
   }
 
@@ -774,7 +890,7 @@ async function mostrarListado() {
     guardarPreferenciasOrden();
     render();
   });
-  document.getElementById('btnNuevo').addEventListener('click', () => mostrarForm(null));
+  document.getElementById('btnNuevo').addEventListener('click', () => irA({ vista: 'form' }));
 
   estadoListado.registros = await PiezasDB.listarTodos();
   render();
@@ -794,7 +910,7 @@ function horaAhora() {
 
 async function mostrarForm(idEdicion) {
   elHeader.innerHTML = `
-    <a class="volver" id="btnVolverForm">←</a>
+    <button type="button" class="volver" id="btnVolverForm" aria-label="Volver">←</button>
     <h1 id="tituloForm">${idEdicion ? 'Editar registro' : 'Nuevo registro'}</h1>
   `;
   elMain.innerHTML = `
@@ -804,9 +920,11 @@ async function mostrarForm(idEdicion) {
         <div id="imagenPicker" class="imagen-picker">
           <img id="previewImagen" style="display:none">
           <div class="icono">📷</div>
-          <div>Toca para hacer una foto o elegir de la galeria</div>
+          <div id="textoPicker">Toca para hacer una foto</div>
           <input id="inputImagen" type="file" accept="image/*" capture="environment">
         </div>
+        <button type="button" id="btnGaleria" class="enlace-galeria">🖼️ o elegir una foto de la galería</button>
+        <input id="inputGaleria" type="file" accept="image/*" hidden>
       </div>
       <div class="campo">
         <label>Nombre de la pieza <span class="obligatorio">*</span></label>
@@ -817,8 +935,8 @@ async function mostrarForm(idEdicion) {
         <input id="cliente" type="text" placeholder="Ej. Talleres Gallego" required>
       </div>
       <div class="dos-columnas">
-        <div class="campo"><label>Expedicion</label><input id="expedicion" type="text" placeholder="Ej. EXP-2026-014"></div>
-        <div class="campo"><label>Cantidad</label><input id="cantidad" type="number" min="0" placeholder="0"></div>
+        <div class="campo"><label>Expedición</label><input id="expedicion" type="text" placeholder="Ej. EXP-2026-014"></div>
+        <div class="campo"><label>Cantidad</label><input id="cantidad" type="number" min="0" inputmode="numeric" placeholder="0"></div>
       </div>
       <div class="dos-columnas">
         <div class="campo"><label>Fecha</label><input id="fecha" type="date"></div>
@@ -875,24 +993,39 @@ async function mostrarForm(idEdicion) {
     elImagenPicker.classList.add('con-imagen');
   }
 
-  elImagenInput.addEventListener('change', async () => {
-    const file = elImagenInput.files && elImagenInput.files[0];
+  // Dos entradas: la del recuadro abre la camara directamente (capture) y la
+  // del enlace abre la galeria (con capture el movil no ofrece la galeria).
+  const elGaleriaInput = document.getElementById('inputGaleria');
+  const elTextoPicker = document.getElementById('textoPicker');
+  let procesandoFoto = false;
+  async function alElegirFoto(input) {
+    const file = input.files && input.files[0];
     if (!file) return;
+    procesandoFoto = true;
+    elTextoPicker.textContent = 'Procesando foto…';
     try {
-      const [thumb, full] = await Promise.all([
-        redimensionarImagen(file, 320, 0.65),
-        redimensionarImagen(file, 1600, 0.85)
-      ]);
+      const { thumb, full } = await prepararImagenes(file);
       imagenThumbActual = thumb;
       imagenFullActual = full;
       mostrarPreview(full);
     } catch (e) {
       mostrarToast('No se pudo cargar la imagen');
+    } finally {
+      procesandoFoto = false;
+      elTextoPicker.textContent = 'Toca para hacer una foto';
+      input.value = ''; // permite volver a elegir el mismo archivo
     }
-  });
+  }
+  elImagenInput.addEventListener('change', () => alElegirFoto(elImagenInput));
+  elGaleriaInput.addEventListener('change', () => alElegirFoto(elGaleriaInput));
+  document.getElementById('btnGaleria').addEventListener('click', () => elGaleriaInput.click());
 
+  const elBtnGuardar = document.querySelector('#formRegistro button[type=submit]');
+  let guardando = false;
   document.getElementById('formRegistro').addEventListener('submit', async (ev) => {
     ev.preventDefault();
+    if (guardando) return;
+    if (procesandoFoto) { mostrarToast('Espera, procesando la foto…'); return; }
     if (!imagenFullActual) { mostrarToast('Añade una foto de la pieza'); elImagenInput.focus(); return; }
     if (!elNombrePieza.value.trim()) { mostrarToast('Falta el nombre de la pieza'); elNombrePieza.focus(); return; }
     if (!elCliente.value.trim()) { mostrarToast('Falta el cliente'); elCliente.focus(); return; }
@@ -914,14 +1047,25 @@ async function mostrarForm(idEdicion) {
       creado: registroExistente ? registroExistente.creado : Date.now(),
       actualizado: Date.now()
     };
-    await PiezasDB.guardar(registro);
-    mostrarDetalle(registro.id, true);
+    guardando = true;
+    elBtnGuardar.disabled = true;
+    elBtnGuardar.textContent = 'Guardando…';
+    try {
+      await PiezasDB.guardar(registro);
+    } catch (e) {
+      guardando = false;
+      elBtnGuardar.disabled = false;
+      elBtnGuardar.textContent = 'Guardar';
+      mostrarToast('No se pudo guardar: ' + textoError(e));
+      return;
+    }
+    toastPendiente = 'Registro guardado';
+    if (registroExistente) history.back(); // vuelve al detalle (que se repinta con los cambios)
+    else irA({ vista: 'detalle', id: registro.id }, true); // el formulario se sustituye por el detalle
   });
 
-  document.getElementById('btnCancelar').addEventListener('click', () => {
-    if (idEdicion) mostrarDetalle(idEdicion); else mostrarListado();
-  });
-  document.getElementById('btnVolverForm').addEventListener('click', () => mostrarListado());
+  document.getElementById('btnCancelar').addEventListener('click', () => history.back());
+  document.getElementById('btnVolverForm').addEventListener('click', () => history.back());
 }
 
 // ============================================================
@@ -932,8 +1076,8 @@ function filaDetalle(etiqueta, valor) {
   return `<div class="ficha-fila"><span class="etiqueta">${etiqueta}</span><span class="valor">${escaparHtml(valor)}</span></div>`;
 }
 
-async function mostrarDetalle(id, recienGuardado) {
-  elHeader.innerHTML = `<a class="volver" id="btnVolverDetalle">←</a><h1>Detalle del registro</h1>`;
+async function mostrarDetalle(id) {
+  elHeader.innerHTML = `<button type="button" class="volver" id="btnVolverDetalle" aria-label="Volver">←</button><h1>Detalle del registro</h1>`;
   elMain.innerHTML = `
     <div id="contenidoDetalle"></div>
     <div class="botones-form">
@@ -941,7 +1085,7 @@ async function mostrarDetalle(id, recienGuardado) {
       <button id="btnEliminar" class="btn btn-peligro" type="button">🗑️ Eliminar</button>
     </div>
   `;
-  document.getElementById('btnVolverDetalle').addEventListener('click', () => mostrarListado());
+  document.getElementById('btnVolverDetalle').addEventListener('click', () => history.back());
 
   const elContenido = document.getElementById('contenidoDetalle');
   const r = await PiezasDB.obtener(id);
@@ -957,7 +1101,7 @@ async function mostrarDetalle(id, recienGuardado) {
     <div class="ficha">
       ${filaDetalle('Nombre de pieza', r.nombrePieza)}
       ${filaDetalle('Cliente', r.cliente)}
-      ${filaDetalle('Expedicion', r.expedicion)}
+      ${filaDetalle('Expedición', r.expedicion)}
       ${filaDetalle('Cantidad', r.cantidad)}
       ${filaDetalle('Fecha', formatearFechaCorta(r.fecha))}
       ${filaDetalle('Hora', r.hora)}
@@ -966,21 +1110,40 @@ async function mostrarDetalle(id, recienGuardado) {
     ${r.comentario ? `<div class="ficha-comentario"><div class="etiqueta">Comentario</div><div class="texto">${escaparHtml(r.comentario)}</div></div>` : ''}
   `;
 
-  document.getElementById('btnEditar').addEventListener('click', () => mostrarForm(r.id));
+  document.getElementById('btnEditar').addEventListener('click', () => irA({ vista: 'form', id: r.id }));
   document.getElementById('btnEliminar').addEventListener('click', async () => {
-    if (!confirm('¿Eliminar este registro? Esta accion no se puede deshacer.')) return;
+    if (!confirm('¿Eliminar este registro? Esta acción no se puede deshacer.')) return;
     await PiezasDB.eliminar(r.id);
-    mostrarListado();
+    toastPendiente = 'Registro eliminado';
+    history.back();
   });
 
   const elImagenDetalle = elContenido.querySelector('.detalle-imagen');
   if (elImagenDetalle) elImagenDetalle.addEventListener('click', () => abrirLightbox(r.imagenFull, r.nombrePieza));
-
-  if (recienGuardado) setTimeout(() => mostrarToast('Registro guardado'), 150);
 }
 
 // ---------- Arranque ----------
-mostrarListado();
+function mostrarErrorAlmacenamiento(e) {
+  elHeader.innerHTML = `<h1>📦 Registro Piezas Laser</h1>`;
+  elMain.innerHTML = `
+    <div class="aviso-error">
+      <p><b>Este navegador no deja guardar datos al abrir el archivo de esta forma.</b></p>
+      <p>Prueba a abrir el archivo con Chrome (Android) o Safari (iPhone) en lugar de
+      con el visor de WhatsApp, Gmail o la app de Archivos, o a guardarlo antes en Descargas.</p>
+      <p style="color:var(--texto-suave);font-size:12px">Detalle tecnico: ${escaparHtml(textoError(e))}</p>
+    </div>`;
+}
+(async function arrancar() {
+  try {
+    await abrirDB();
+  } catch (e) {
+    mostrarErrorAlmacenamiento(e);
+    return;
+  }
+  // Pide al navegador que no borre los datos si el movil va justo de espacio
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  irA({ vista: 'listado' }, true);
+})();
 
 </script>
 </body>
